@@ -45,7 +45,11 @@ app.post("/send-whatsapp", async (req, res) => {
       body: JSON.stringify(body)
     })
 
+    console.log(`[WAHA] Enviando ${endpoint} para ${phone}...`)
+    if (image) console.log(`[WAHA] URL da Imagem: ${image}`)
+
     const data = await response.json()
+    console.log(`[WAHA] Resposta:`, JSON.stringify(data))
     res.json(data)
 
   } catch (err) {

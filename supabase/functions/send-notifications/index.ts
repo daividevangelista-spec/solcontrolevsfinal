@@ -178,7 +178,11 @@ serve(async (req) => {
             ? new Date(finalDueDate+'T12:00:00').toLocaleDateString('pt-BR')
             : ''
           const pixCode = finalPixCode || "---"
-          const pixQrCode = finalPixQr
+          
+          // Dynamic QR Fallback: If no static URL, generate one from the PIX code
+          const pixQrCode = finalPixQr || (pixCode !== "---" 
+            ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&qzone=1&data=${encodeURIComponent(pixCode)}`
+            : null);
 
           let message = "";
           
@@ -193,8 +197,9 @@ serve(async (req) => {
               ? `R$ ${Number(finalSolarValue).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
               : 'R$ 0,00';
             const portalUrl = `https://solcontrole-solar.vercel.app/login`;
+            const qrLinkSection = pixQrCode ? `\n\n📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}` : '';
 
-            message = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 Copia e Cola PIX:\n\n${pixCode}\n\n📷 QR Code PIX para pagamento será enviado logo abaixo.\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nObrigado por utilizar energia solar ☀️\n*SolControle*`;
+            message = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 Copia e Cola PIX:\n\n${pixCode}\n\n📷 QR Code PIX para pagamento será enviado logo abaixo.${qrLinkSection}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nObrigado por utilizar energia solar ☀️\n*SolControle*`;
           }
 
           const WHATSAPP_ENDPOINT = Deno.env.get("WHATSAPP_ENDPOINT") || "https://unantagonized-marceline-nonincriminating.ngrok-free.dev"
