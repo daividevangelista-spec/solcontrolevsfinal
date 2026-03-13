@@ -192,9 +192,9 @@ serve(async (req) => {
             const solarVal = (finalSolarValue !== undefined && finalSolarValue !== null)
               ? `R$ ${Number(finalSolarValue).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
               : 'R$ 0,00';
-            const invoiceUrl = `https://solcontrole00-app.vercel.app/`;
+            const portalUrl = `https://solcontrole-solar.vercel.app/login`;
 
-            message = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 Copia e Cola PIX:\n\n${pixCode}\n\n📷 QR Code PIX para pagamento será enviado logo abaixo.\n\n📄 *Acessar sua fatura completa:*\n${invoiceUrl}\n\nObrigado por utilizar energia solar ☀️\n*SolControle*`;
+            message = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 Copia e Cola PIX:\n\n${pixCode}\n\n📷 QR Code PIX para pagamento será enviado logo abaixo.\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nObrigado por utilizar energia solar ☀️\n*SolControle*`;
           }
 
           const WHATSAPP_ENDPOINT = Deno.env.get("WHATSAPP_ENDPOINT") || "https://unantagonized-marceline-nonincriminating.ngrok-free.dev"
