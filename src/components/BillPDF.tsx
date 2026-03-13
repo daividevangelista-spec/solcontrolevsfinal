@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.orange,
-    padding: '28 40 24 40',
+    padding: '20 36 18 36',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -79,11 +79,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   body: {
-    padding: '20 40 10 40', // Reduced top and bottom padding
-    gap: 15, // Reduced gap between sections
+    padding: '16 36 8 36',
+    gap: 10,
   },
   section: {
-    marginBottom: 12, // Reduced margin
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 8,
@@ -200,8 +200,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#BBF7D0',
-    padding: '14 16',
-    alignItems: 'center', // Center everything
+    padding: '10 14',
+    alignItems: 'center',
   },
   pixTitle: {
     fontSize: 10,
@@ -253,11 +253,11 @@ const styles = StyleSheet.create({
   },
   savingsSection: {
     backgroundColor: '#F0F9FF',
-    padding: '12 14',
+    padding: '8 12',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#BAE6FD',
-    marginTop: 10,
+    marginTop: 6,
   },
   savingsTitle: {
     fontSize: 9,
@@ -285,13 +285,12 @@ const styles = StyleSheet.create({
     color: colors.dark,
   },
   footer: {
-    padding: '14 40',
+    padding: '10 36',
     borderTopWidth: 1,
     borderTopColor: colors.border,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 'auto',
   },
   footerText: {
     fontSize: 8,
@@ -502,12 +501,12 @@ export function BillPDF({
                 <View style={{ alignItems: 'center', marginTop: 5 }}>
                   <Text style={[styles.infoLabel, { marginBottom: 8 }]}>Ou aponte a câmera do banco para o QR Code:</Text>
                   {pixQrUrl ? (
-                    <View style={{ backgroundColor: '#FFF', padding: 6, borderRadius: 8, borderWidth: 1, borderColor: '#EEE' }}>
-                      <Image src={pixQrUrl} style={{ width: 100, height: 100 }} />
+                    <View style={{ backgroundColor: '#FFF', padding: 5, borderRadius: 8, borderWidth: 1, borderColor: '#EEE' }}>
+                      <Image src={pixQrUrl} style={{ width: 80, height: 80 }} />
                     </View>
                   ) : (
-                    <View style={{ width: 120, height: 120, backgroundColor: '#FFF', borderStyle: 'dashed', borderWidth: 1, borderColor: '#CCC', justifyContent: 'center', alignItems: 'center' }}>
-                      <Text style={{ fontSize: 8, color: '#999' }}>QR Code disponível no App SolControle</Text>
+                    <View style={{ width: 80, height: 80, backgroundColor: '#FFF', borderStyle: 'dashed', borderWidth: 1, borderColor: '#CCC', justifyContent: 'center', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 7, color: '#999' }}>QR Code disponível no App SolControle</Text>
                     </View>
                   )}
                 </View>

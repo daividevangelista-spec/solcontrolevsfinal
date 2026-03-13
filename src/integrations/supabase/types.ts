@@ -138,6 +138,12 @@ export type Database = {
           due_date: string
           energisa_bill_file_url: string | null
           energisa_bill_value: number | null
+          energisa_payment_proof_url: string | null
+          solar_payment_proof_url: string | null
+          billing_mode: 'combined' | 'separate'
+          concessionaria_value: number | null
+          concessionaria_bill_url: string | null
+          utility_tariff_used: number | null
           id: string
           injected_energy_kwh: number | null
           invoice_file_url: string | null
@@ -155,6 +161,12 @@ export type Database = {
           due_date: string
           energisa_bill_file_url?: string | null
           energisa_bill_value?: number | null
+          energisa_payment_proof_url?: string | null
+          solar_payment_proof_url?: string | null
+          billing_mode?: 'combined' | 'separate'
+          concessionaria_value?: number | null
+          concessionaria_bill_url?: string | null
+          utility_tariff_used?: number | null
           id?: string
           injected_energy_kwh?: number | null
           invoice_file_url?: string | null
@@ -172,6 +184,12 @@ export type Database = {
           due_date?: string
           energisa_bill_file_url?: string | null
           energisa_bill_value?: number | null
+          energisa_payment_proof_url?: string | null
+          solar_payment_proof_url?: string | null
+          billing_mode?: 'combined' | 'separate'
+          concessionaria_value?: number | null
+          concessionaria_bill_url?: string | null
+          utility_tariff_used?: number | null
           id?: string
           injected_energy_kwh?: number | null
           invoice_file_url?: string | null

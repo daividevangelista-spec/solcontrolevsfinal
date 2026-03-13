@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Upload, Sun, Building2, FileDown, Zap, CalendarDays, 
   Filter, Pencil, Trash2, Eye, CheckCircle, TrendingUp, Clock, 
-  Check, Save, Search, MoreHorizontal, Download
+  Check, Save, Search, MoreHorizontal, Download, Loader2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -37,8 +37,12 @@ interface Bill {
   solar_energy_value: number;
   energisa_bill_value: number;
   energisa_bill_file_url: string | null;
-  energisa_payment_proof_url: string | null;
-  solar_payment_proof_url: string | null;
+  energisa_payment_proof_url?: string | null;
+  solar_payment_proof_url?: string | null;
+  billing_mode?: 'combined' | 'separate';
+  concessionaria_value?: number | null;
+  concessionaria_bill_url?: string | null;
+  utility_tariff_used?: number | null;
   consumer_units?: { 
     unit_name: string; 
     clients?: { 
@@ -50,6 +54,7 @@ interface Bill {
     } | null;
   } | null;
 }
+
 
 interface Unit {
   id: string;
@@ -99,10 +104,13 @@ export default function AdminBills() {
   const [open, setOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
+  const [uploadingBoleto, setUploadingBoleto] = useState(false);
 
   const [form, setForm] = useState({
     consumer_unit_id: '', month: '', year: new Date().getFullYear().toString(),
     injected_energy_kwh: '', energisa_bill_value: '', due_date: '',
+    billing_mode: 'combined' as 'combined' | 'separate',
+    concessionaria_value: '',
   });
 
   const [bulkForm, setBulkForm] = useState({
@@ -153,8 +161,12 @@ export default function AdminBills() {
     const selectedUnit = units.find(u => u.id === form.consumer_unit_id);
     const kwh = parseFloat(form.injected_energy_kwh || '0');
     const energisa = parseFloat(form.energisa_bill_value || '0');
+    const concessionaria = parseFloat(form.concessionaria_value || '0');
     const solar = calcSolar(kwh, selectedUnit, pricePerKwh);
-    const total = solar + energisa;
+    // Total depends on billing mode
+    const total = form.billing_mode === 'combined'
+      ? solar + energisa
+      : solar; // In separate mode, client pays solar via PIX; concessionaria paid externally
 
     const payload = {
       consumer_unit_id: form.consumer_unit_id,
@@ -167,7 +179,9 @@ export default function AdminBills() {
       utility_tariff_used: standardUtilityTariff,
       price_per_kwh: pricePerKwh,
       solar_energy_value: solar,
-      total_amount: total
+      total_amount: total,
+      billing_mode: form.billing_mode,
+      concessionaria_value: concessionaria,
     };
 
     try {
@@ -240,8 +254,28 @@ export default function AdminBills() {
     if (!confirm('Excluir esta fatura permanentemente?')) return;
     const { error } = await supabase.from('energy_bills').delete().eq('id', id);
     if (!error) {
-      toast.success("Excluída");
+      toast.success("Excluu00edda");
       load();
+    }
+  };
+
+  const handleUploadBoleto = async (file: File, billId: string) => {
+    if (!file || !billId) return;
+    setUploadingBoleto(true);
+    const toastId = toast.loading('Enviando boleto...');
+    try {
+      const path = `boletos/${billId}/${file.name}`;
+      const { error: uploadErr } = await supabase.storage.from('invoices').upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadErr) throw uploadErr;
+      const { data: urlData } = supabase.storage.from('invoices').getPublicUrl(path);
+      const { error: updateErr } = await supabase.from('energy_bills').update({ concessionaria_bill_url: urlData.publicUrl } as any).eq('id', billId);
+      if (updateErr) throw updateErr;
+      setBills(prev => prev.map(b => b.id === billId ? { ...b, concessionaria_bill_url: urlData.publicUrl } : b));
+      toast.success('Boleto enviado!', { id: toastId });
+    } catch (err: any) {
+      toast.error('Erro no upload: ' + err.message, { id: toastId });
+    } finally {
+      setUploadingBoleto(false);
     }
   };
 
@@ -359,7 +393,7 @@ export default function AdminBills() {
             <Button variant="outline" className="h-10 bg-white/10 border-white/20 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/20" onClick={() => setBulkOpen(true)}>
               <Zap className="w-3.5 h-3.5 mr-2" /> Gerar Lote Mês
             </Button>
-            <Button className="h-10 solar-gradient text-accent rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/30" onClick={() => { setEditingBill(null); setForm({ consumer_unit_id: '', month: '', year: new Date().getFullYear().toString(), injected_energy_kwh: '', energisa_bill_value: '', due_date: '' }); setOpen(true); }}>
+            <Button className="h-10 solar-gradient text-accent rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/30" onClick={() => { setEditingBill(null); setForm({ consumer_unit_id: '', month: '', year: new Date().getFullYear().toString(), injected_energy_kwh: '', energisa_bill_value: '', due_date: '', billing_mode: 'combined', concessionaria_value: '' }); setOpen(true); }}>
               <Plus className="w-3.5 h-3.5 mr-2" /> Nova Fatura
             </Button>
           </div>
@@ -470,20 +504,25 @@ export default function AdminBills() {
                     <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 text-primary transition-all" onClick={() => handleDownloadPDF(b)} title="Gerar PDF">
                         <FileDown className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-info/10 text-info transition-all" onClick={() => { setEditingBill(b); setForm({ consumer_unit_id: b.consumer_unit_id, month: b.month.toString(), year: b.year.toString(), injected_energy_kwh: b.injected_energy_kwh.toString(), energisa_bill_value: b.energisa_bill_value.toString(), due_date: b.due_date }); setOpen(true); }} title="Editar">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-info/10 text-info transition-all" onClick={() => { setEditingBill(b); setForm({ consumer_unit_id: b.consumer_unit_id, month: b.month.toString(), year: b.year.toString(), injected_energy_kwh: b.injected_energy_kwh.toString(), energisa_bill_value: b.energisa_bill_value.toString(), due_date: b.due_date, billing_mode: (b.billing_mode || 'combined') as 'combined' | 'separate', concessionaria_value: (b.concessionaria_value || 0).toString() }); setOpen(true); }} title="Editar">
                         <Pencil className="w-3.5 h-3.5" />
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted font-bold"><MoreHorizontal className="w-4 h-4" /></Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 rounded-xl p-1 shadow-2xl">
+                        <DropdownMenuContent align="end" className="w-56 rounded-xl p-1 shadow-2xl">
                             <DropdownMenuItem className="rounded-lg gap-2 text-[10px] font-black uppercase" onClick={() => b.invoice_file_url && handleOpenPrivateFile(b.invoice_file_url)}>
                                 <Eye className="w-3.5 h-3.5 text-primary" /> Ver Fatura Solar
                             </DropdownMenuItem>
                             <DropdownMenuItem className="rounded-lg gap-2 text-[10px] font-black uppercase" onClick={() => b.energisa_bill_file_url && handleOpenPrivateFile(b.energisa_bill_file_url)}>
                                 <Building2 className="w-3.5 h-3.5 text-info" /> Ver Conta Energisa
                             </DropdownMenuItem>
+                            {b.concessionaria_bill_url && (
+                              <DropdownMenuItem className="rounded-lg gap-2 text-[10px] font-black uppercase" onClick={() => b.concessionaria_bill_url && handleOpenPrivateFile(b.concessionaria_bill_url)}>
+                                  <Download className="w-3.5 h-3.5 text-warning" /> Baixar Boleto
+                              </DropdownMenuItem>
+                            )}
                             <div className="h-px bg-border my-1" />
                             <DropdownMenuItem className="rounded-lg gap-2 text-[10px] font-black uppercase text-destructive hover:text-white hover:bg-destructive" onClick={() => handleDelete(b.id)}>
                                 <Trash2 className="w-3.5 h-3.5" /> Excluir Registro
@@ -499,71 +538,124 @@ export default function AdminBills() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
-          <div className="h-3 solar-gradient" />
-          <div className="p-8 space-y-6">
+        <DialogContent className="max-w-2xl rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
+          <div className="h-2 solar-gradient" />
+          <div className="p-6 space-y-4 overflow-y-auto max-h-[90vh]">
             <DialogHeader>
-                <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3">
-                    <div className="p-2.5 rounded-2xl bg-primary/10 text-primary shadow-inner">
-                        {editingBill ? <Pencil className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
-                    </div>
-                    {editingBill ? 'Editar Fatura' : 'Nova Fatura'}
-                </DialogTitle>
+              <DialogTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                  {editingBill ? <Pencil className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                </div>
+                {editingBill ? 'Editar Fatura' : 'Nova Fatura'}
+              </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4 pt-4">
-                {!editingBill && (
-                    <div className="space-y-1.5">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Unidade Consumidora</Label>
-                        <Select value={form.consumer_unit_id} onValueChange={v => setForm({ ...form, consumer_unit_id: v })}>
-                            <SelectTrigger className="h-12 rounded-2xl border-border/40 font-bold bg-muted/10"><SelectValue placeholder="Selecione a Unidade" /></SelectTrigger>
-                            <SelectContent className="max-h-60 rounded-2xl font-bold">
-                                {units.map(u => <SelectItem key={u.id} value={u.id}>{u.unit_name} ({u.clients?.name})</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                        <Label className="text-[10px] font-black uppercase px-1">Mês Ref.</Label>
-                        <Select value={form.month} onValueChange={v => setForm({ ...form, month: v })}>
-                            <SelectTrigger className="h-12 rounded-2xl bg-muted/10 border-border/40 font-bold"><SelectValue placeholder="Mês" /></SelectTrigger>
-                            <SelectContent className="rounded-2xl font-bold">
-                                {months.map((m, i) => <SelectItem key={i} value={(i + 1).toString()}>{m}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-[10px] font-black uppercase px-1">Ano Ref.</Label>
-                        <Input value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} className="h-12 rounded-2xl bg-muted/10 font-bold" />
-                    </div>
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              {/* Unit selector - full width only when creating */}
+              {!editingBill && (
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Unidade Consumidora</Label>
+                  <Select value={form.consumer_unit_id} onValueChange={v => setForm({ ...form, consumer_unit_id: v })}>
+                    <SelectTrigger className="h-10 rounded-xl border-border/40 font-bold bg-muted/10"><SelectValue placeholder="Selecione a Unidade" /></SelectTrigger>
+                    <SelectContent className="max-h-60 rounded-xl font-bold">
+                      {units.map(u => <SelectItem key={u.id} value={u.id}>{u.unit_name} ({u.clients?.name})</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
+              )}
 
-                <div className="p-4 rounded-3xl bg-warning/5 border border-warning/10 space-y-4">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-warning uppercase px-1"><Sun className="w-3.5 h-3.5" /> Geração Solar</div>
-                    <div className="relative group">
-                        <Input type="number" step="0.01" value={form.injected_energy_kwh} onChange={e => setForm({ ...form, injected_energy_kwh: e.target.value })} className="h-14 pr-16 rounded-2xl font-black text-2xl bg-white shadow-inner border-border/30 group-focus-within:ring-4 group-focus-within:ring-warning/10 transition-all text-center" placeholder="0" />
-                        <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-muted-foreground/30 text-lg">kWh</span>
+              {/* Mes / Ano */}
+              <div className="space-y-1">
+                <Label className="text-[10px] font-black uppercase px-1">Mês Ref.</Label>
+                <Select value={form.month} onValueChange={v => setForm({ ...form, month: v })}>
+                  <SelectTrigger className="h-10 rounded-xl bg-muted/10 border-border/40 font-bold"><SelectValue placeholder="Mês" /></SelectTrigger>
+                  <SelectContent className="rounded-xl font-bold">
+                    {months.map((m, i) => <SelectItem key={i} value={(i + 1).toString()}>{m}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] font-black uppercase px-1">Ano Ref.</Label>
+                <Input value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} className="h-10 rounded-xl bg-muted/10 font-bold" />
+              </div>
+
+              {/* Solar kWh */}
+              <div className="space-y-1">
+                <Label className="text-[10px] font-black text-warning uppercase px-1">☀ Energia Injetada (kWh)</Label>
+                <div className="relative">
+                  <Input type="number" step="0.01" value={form.injected_energy_kwh} onChange={e => setForm({ ...form, injected_energy_kwh: e.target.value })} className="h-12 pr-14 rounded-xl font-black text-xl bg-white shadow-inner border-border/30 text-center" placeholder="0" />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-muted-foreground/40 text-sm">kWh</span>
+                </div>
+              </div>
+
+              {/* Energisa value */}
+              <div className="space-y-1">
+                <Label className="text-[10px] font-black text-info uppercase px-1">🏢 Conta Energisa (R$)</Label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-muted-foreground/40 text-sm">R$</span>
+                  <Input type="number" step="0.01" value={form.energisa_bill_value} onChange={e => setForm({ ...form, energisa_bill_value: e.target.value })} className="h-12 pl-12 rounded-xl font-black text-xl bg-white shadow-inner border-border/30 text-center" placeholder="0" />
+                </div>
+              </div>
+
+              {/* Due date */}
+              <div className="space-y-1">
+                <Label className="text-[10px] font-black uppercase px-1 text-muted-foreground">Vencimento</Label>
+                <Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} className="h-10 rounded-xl bg-muted/10 font-bold border-border/40" />
+              </div>
+
+              {/* Billing Mode */}
+              <div className="space-y-1">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Modo de Cobrança</Label>
+                <Select value={form.billing_mode} onValueChange={v => setForm({ ...form, billing_mode: v as 'combined' | 'separate' })}>
+                  <SelectTrigger className="h-10 rounded-xl border-border/40 font-bold bg-muted/10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl font-bold">
+                    <SelectItem value="combined">⚡ Cobrança Única (PIX)</SelectItem>
+                    <SelectItem value="separate">🔀 Separada (PIX + Boleto)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Separate mode: concessionaria value + boleto upload */}
+              {form.billing_mode === 'separate' && (
+                <>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-black text-orange-600 uppercase px-1">🏢 Valor Concessionária (R$)</Label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-muted-foreground/40 text-sm">R$</span>
+                      <Input type="number" step="0.01" value={form.concessionaria_value} onChange={e => setForm({ ...form, concessionaria_value: e.target.value })} className="h-12 pl-12 rounded-xl font-black text-xl bg-orange-50 border-orange-200 text-center" placeholder="0" />
                     </div>
-                </div>
+                  </div>
 
-                <div className="p-4 rounded-3xl bg-info/5 border border-info/10 space-y-4">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-info uppercase px-1"><Building2 className="w-3.5 h-3.5" /> Conta Energisa</div>
-                    <div className="relative group">
-                        <Input type="number" step="0.01" value={form.energisa_bill_value} onChange={e => setForm({ ...form, energisa_bill_value: e.target.value })} className="h-14 pl-14 rounded-2xl font-black text-2xl bg-white shadow-inner border-border/30 group-focus-within:ring-4 group-focus-within:ring-info/10 transition-all text-center" placeholder="0" />
-                        <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-muted-foreground/30 text-lg">R$</span>
+                  {editingBill && (
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-black text-orange-600 uppercase px-1">Boleto PDF (Upload)</Label>
+                      <label className="flex items-center gap-2 h-12 px-4 rounded-xl bg-orange-50 border border-orange-200 cursor-pointer hover:bg-orange-100 transition-all">
+                        <input type="file" accept=".pdf,application/pdf" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f && editingBill) handleUploadBoleto(f, editingBill.id); }} />
+                        {uploadingBoleto ? <Loader2 className="w-4 h-4 text-orange-600 animate-spin" /> : <Upload className="w-4 h-4 text-orange-600" />}
+                        <span className="text-xs font-bold text-orange-600 truncate">
+                          {editingBill.concessionaria_bill_url ? 'Boleto já enviado ✓' : 'Selecionar PDF'}
+                        </span>
+                      </label>
+                      {editingBill.concessionaria_bill_url && (
+                        <p className="text-[9px] text-orange-600/60 px-1 truncate">{editingBill.concessionaria_bill_url}</p>
+                      )}
                     </div>
-                </div>
+                  )}
 
-                <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase px-1 text-muted-foreground">Vencimento da Fatura</Label>
-                    <Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} className="h-12 rounded-2xl bg-muted/10 font-bold border-border/40" />
-                </div>
+                  {!editingBill && (
+                    <div className="col-span-2 space-y-1">
+                      <Label className="text-[10px] font-black text-orange-600/70 uppercase px-1">Boleto PDF</Label>
+                      <p className="text-[9px] text-muted-foreground/60 px-1">Salve a fatura primeiro, depois edite para anexar o boleto PDF.</p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
-            <Button onClick={handleCreateOrUpdate} className="w-full h-14 rounded-2xl solar-gradient text-accent font-black text-lg tracking-widest shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all active:scale-95">
-                {editingBill ? 'SALVAR ALTERAÇÕES' : 'CONFIRMAR REGISTRO'}
+            <Button onClick={handleCreateOrUpdate} className="w-full h-12 rounded-2xl solar-gradient text-accent font-black text-sm tracking-widest shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all active:scale-95 mt-2">
+              {editingBill ? 'SALVAR ALTERAÇÕES' : 'CONFIRMAR REGISTRO'}
             </Button>
           </div>
         </DialogContent>

@@ -40,6 +40,9 @@ interface Bill {
   solar_payment_proof_url: string | null;
   price_per_kwh?: number;
   utility_tariff_used?: number;
+  billing_mode?: 'combined' | 'separate';
+  concessionaria_value?: number | null;
+  concessionaria_bill_url?: string | null;
   consumer_units?: { 
     unit_name: string;
     clients?: {
@@ -345,43 +348,113 @@ export default function ClientDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
               <div className="lg:col-span-2">
-                <Card className="overflow-hidden border-none text-white shadow-2xl relative min-h-[450px]">
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 opacity-95" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(245,158,11,0.2),transparent_70%)]" />
-                  <div className="relative p-6 bg-white/5 border-b border-white/10 font-bold flex items-center justify-between backdrop-blur-md">
-                    <h3 className="font-display text-2xl flex items-center gap-3 text-primary"><HandCoins className="w-8 h-8" /> Pagamento Rápido</h3>
-                    <Badge className="solar-gradient text-accent font-black uppercase text-[10px] tracking-widest px-3 py-1">PIX Instantâneo</Badge>
-                  </div>
-                  <CardContent className="relative p-8 flex flex-col items-center text-center space-y-8">
-                    {activeQrUrl ? (
-                      <div className="bg-white p-4 rounded-3xl border-4 border-primary/20 shadow-2xl">
-                        <img src={activeQrUrl} alt="QR Code" className="w-40 h-40 sm:w-48 sm:h-48 object-contain" />
+                {currentBill.billing_mode === 'separate' ? (
+                  /* SEPARATE BILLING: Two distinct payment blocks */
+                  <div className="space-y-4">
+                    {/* Solar Block */}
+                    <Card className="overflow-hidden border-none text-white shadow-2xl relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 opacity-95" />
+                      <div className="relative p-5 bg-white/5 border-b border-white/10 flex items-center justify-between">
+                        <h3 className="font-display text-xl flex items-center gap-3 text-warning">
+                          <Sun className="w-6 h-6" /> Energia Solar
+                        </h3>
+                        <Badge className="solar-gradient text-accent font-black uppercase text-[10px] tracking-widest">PIX</Badge>
                       </div>
-                    ) : (
-                      <div className="w-40 h-40 bg-white/5 border-2 border-dashed border-white/10 rounded-3xl flex items-center justify-center"><Sun className="w-10 h-10 opacity-10 animate-spin-slow" /></div>
-                    )}
-                    <div className="w-full max-w-md space-y-6">
-                      <div className="space-y-2 text-left">
-                        <p className="text-[10px] font-black text-primary/70 uppercase tracking-widest ml-2">Copia e Cola</p>
-                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl group hover:border-primary/50 transition-all">
-                          <p className="font-mono text-xs sm:text-sm font-bold text-white/90 truncate flex-1">{activePixKey || 'Não disponível'}</p>
-                          <Button size="icon" variant="ghost" className="h-10 w-10 text-primary hover:bg-primary/20" onClick={handleCopyPix}>
-                            {copied ? <Check className="w-5 h-5 text-success" /> : <Copy className="w-5 h-5" />}
+                      <CardContent className="relative p-6 flex flex-col items-center text-center space-y-4">
+                        {activeQrUrl && (
+                          <div className="bg-white p-3 rounded-2xl border-4 border-primary/20 shadow-2xl">
+                            <img src={activeQrUrl} alt="QR Code Solar" className="w-32 h-32 object-contain" />
+                          </div>
+                        )}
+                        <div className="w-full max-w-md space-y-3">
+                          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/10 border border-white/15">
+                            <p className="font-mono text-xs font-bold text-white/90 truncate flex-1">{activePixKey || 'Não configurado'}</p>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary hover:bg-primary/20" onClick={handleCopyPix}>
+                              {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+                            </Button>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                            <div className="text-left">
+                              <p className="text-[9px] text-white/40 mb-0.5 uppercase font-black">Pagar Solar via PIX</p>
+                              <p className="text-3xl font-display font-black text-warning">R$ {(currentBill.solar_energy_value || 0).toFixed(2)}</p>
+                            </div>
+                            <Button className="px-6 solar-gradient text-accent font-black h-12 rounded-xl shadow-lg" onClick={handleCopyPix}>
+                              {copied ? 'COPIADO' : 'COPIAR PIX'}
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Concessionária Block */}
+                    <Card className="overflow-hidden border-none text-white shadow-2xl relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 opacity-95" />
+                      <div className="relative p-5 bg-white/5 border-b border-white/10 flex items-center justify-between">
+                        <h3 className="font-display text-xl flex items-center gap-3 text-blue-300">
+                          <Building2 className="w-6 h-6" /> Concessionária
+                        </h3>
+                        <Badge className="bg-blue-600 text-white font-black uppercase text-[10px] tracking-widest border-transparent">BOLETO</Badge>
+                      </div>
+                      <CardContent className="relative p-6 flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-[9px] text-white/40 mb-0.5 uppercase font-black">Pagar via Boleto Externo</p>
+                          <p className="text-3xl font-display font-black text-blue-300">R$ {(currentBill.concessionaria_value || currentBill.energisa_bill_value || 0).toFixed(2)}</p>
+                        </div>
+                        {(currentBill.concessionaria_bill_url || currentBill.energisa_bill_file_url) ? (
+                          <Button 
+                            className="px-6 bg-blue-600 hover:bg-blue-500 text-white font-black h-12 rounded-xl shadow-lg flex items-center gap-2"
+                            onClick={() => handleOpenPrivateFile((currentBill.concessionaria_bill_url || currentBill.energisa_bill_file_url)!)}
+                          >
+                            <Download className="w-4 h-4" /> BAIXAR BOLETO
+                          </Button>
+                        ) : (
+                          <div className="px-6 h-12 rounded-xl border border-white/10 flex items-center text-white/30 text-[10px] font-black uppercase">
+                            Boleto não disponível
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  /* COMBINED BILLING: Single PIX total */
+                  <Card className="overflow-hidden border-none text-white shadow-2xl relative min-h-[450px]">
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 opacity-95" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(245,158,11,0.2),transparent_70%)]" />
+                    <div className="relative p-6 bg-white/5 border-b border-white/10 font-bold flex items-center justify-between backdrop-blur-md">
+                      <h3 className="font-display text-2xl flex items-center gap-3 text-primary"><HandCoins className="w-8 h-8" /> Pagamento Rápido</h3>
+                      <Badge className="solar-gradient text-accent font-black uppercase text-[10px] tracking-widest px-3 py-1">PIX Instantâneo</Badge>
+                    </div>
+                    <CardContent className="relative p-8 flex flex-col items-center text-center space-y-8">
+                      {activeQrUrl ? (
+                        <div className="bg-white p-4 rounded-3xl border-4 border-primary/20 shadow-2xl">
+                          <img src={activeQrUrl} alt="QR Code" className="w-40 h-40 sm:w-48 sm:h-48 object-contain" />
+                        </div>
+                      ) : (
+                        <div className="w-40 h-40 bg-white/5 border-2 border-dashed border-white/10 rounded-3xl flex items-center justify-center"><Sun className="w-10 h-10 opacity-10 animate-spin-slow" /></div>
+                      )}
+                      <div className="w-full max-w-md space-y-6">
+                        <div className="space-y-2 text-left">
+                          <p className="text-[10px] font-black text-primary/70 uppercase tracking-widest ml-2">Copia e Cola</p>
+                          <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl group hover:border-primary/50 transition-all">
+                            <p className="font-mono text-xs sm:text-sm font-bold text-white/90 truncate flex-1">{activePixKey || 'Não disponível'}</p>
+                            <Button size="icon" variant="ghost" className="h-10 w-10 text-primary hover:bg-primary/20" onClick={handleCopyPix}>
+                              {copied ? <Check className="w-5 h-5 text-success" /> : <Copy className="w-5 h-5" />}
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between pt-4 border-t border-white/10">
+                          <div className="text-left">
+                            <p className="text-[10px] text-white/40 mb-1 uppercase font-black">Total a Pagar</p>
+                            <p className="text-4xl font-display font-black text-primary">R$ {currentBill.total_amount.toFixed(2)}</p>
+                          </div>
+                          <Button className="w-full sm:w-auto px-8 solar-gradient text-accent font-black h-14 rounded-xl shadow-lg hover:scale-[1.03] transition-all" onClick={handleCopyPix}>
+                            {copied ? 'COPIADO' : 'COPIAR CHAVE PIX'}
                           </Button>
                         </div>
                       </div>
-                      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between pt-4 border-t border-white/10">
-                        <div className="text-left">
-                          <p className="text-[10px] text-white/40 mb-1 uppercase font-black">Total a Pagar</p>
-                          <p className="text-4xl font-display font-black text-primary">R$ {currentBill.total_amount.toFixed(2)}</p>
-                        </div>
-                        <Button className="w-full sm:w-auto px-8 solar-gradient text-accent font-black h-14 rounded-xl shadow-lg hover:scale-[1.03] transition-all" onClick={handleCopyPix}>
-                          {copied ? 'COPIADO' : 'COPIAR CHAVE PIX'}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               <div className="space-y-6">

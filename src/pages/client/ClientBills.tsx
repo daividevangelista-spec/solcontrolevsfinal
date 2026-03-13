@@ -22,6 +22,9 @@ interface Bill {
   solar_energy_value: number;
   energisa_bill_value: number;
   energisa_bill_file_url: string | null;
+  billing_mode?: 'combined' | 'separate';
+  concessionaria_value?: number | null;
+  concessionaria_bill_url?: string | null;
   price_per_kwh?: number;
   utility_tariff_used?: number;
   consumer_units?: { 
@@ -63,7 +66,7 @@ export default function ClientBills() {
       if (!user) return;
       setLoading(true);
       try {
-        // First get the client ID for this user
+        // Step 1: get the client linked to this user
         const { data: clientData, error: clientError } = await supabase
           .from('clients')
           .select('id')
@@ -73,10 +76,25 @@ export default function ClientBills() {
         if (clientError) throw clientError;
 
         if (clientData) {
-          const { data, error: billsError } = await supabase.from('energy_bills')
-            .select('*, consumer_units!inner(unit_name, client_id, clients(name, override_pix, custom_pix_key, custom_pix_qr_code_url, custom_pix_receiver, price_per_kwh))')
-            .eq('consumer_units.client_id', clientData.id)
-            .order('year', { ascending: false }).order('month', { ascending: false });
+          // Step 2: get consumer_unit IDs for this client
+          const { data: unitsData } = await supabase
+            .from('consumer_units')
+            .select('id')
+            .eq('client_id', clientData.id);
+
+          const unitIds = (unitsData || []).map((u: any) => u.id);
+
+          if (unitIds.length === 0) {
+            setBills([]);
+            return;
+          }
+
+          // Step 3: get all bills for those units (no status filter — show pending, paid, overdue)
+          const { data, error: billsError } = await supabase
+            .from('energy_bills')
+            .select('*, consumer_units(unit_name, clients(name, override_pix, custom_pix_key, custom_pix_qr_code_url, custom_pix_receiver, price_per_kwh))')
+            .in('consumer_unit_id', unitIds)
+            .order('due_date', { ascending: false });
             
           if (billsError) throw billsError;
           setBills((data as any) || []);
