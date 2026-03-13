@@ -106,7 +106,8 @@ const styles = StyleSheet.create({
   },
   totalBox: {
     backgroundColor: colors.orange,
-    padding: '10 20',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: 'center',
   },
@@ -128,8 +129,10 @@ const styles = StyleSheet.create({
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: colors.dark,
-    padding: '6 10',
-    borderRadius: '4 4 0 0',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
   },
   tableHeaderText: {
     color: colors.white,
@@ -139,7 +142,8 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: 'row',
-    padding: '8 10',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
