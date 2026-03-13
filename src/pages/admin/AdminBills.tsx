@@ -12,6 +12,12 @@ import {
   Filter, Pencil, Trash2, Eye, CheckCircle, TrendingUp, Clock, 
   Check, Save, Search, MoreHorizontal, Download
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from 'sonner';
 import { pdf } from '@react-pdf/renderer';
 import { BillPDF } from '@/components/BillPDF';
