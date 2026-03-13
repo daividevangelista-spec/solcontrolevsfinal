@@ -12,294 +12,231 @@ const colors = {
   yellow: '#EAB308',
   white: '#FFFFFF',
   dark: '#0F172A',
-  gray: '#64748B',
-  lightGray: '#F8FAFC',
+  gray: '#475569',
+  lightGray: '#F1F5F9',
   border: '#E2E8F0',
-  green: '#22C55E',
-  red: '#EF4444',
-  blue: '#3B82F6',
-  amber: '#F59E0B',
+  green: '#15803D',
+  red: '#B91C1C',
+  blue: '#1D4ED8',
 };
 
 const styles = StyleSheet.create({
   page: {
     backgroundColor: colors.white,
-    fontSize: 10,
+    fontSize: 9,
     color: colors.dark,
-    padding: 0,
+    padding: 30,
+    fontFamily: 'Helvetica',
   },
+  // ── HEADER ──
   header: {
-    backgroundColor: colors.orange,
-    padding: '20 36 18 36',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  sunIcon: {
-    width: 36,
-    height: 36,
-    backgroundColor: colors.yellow,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sunText: {
-    fontSize: 18,
-    color: colors.white,
+    marginBottom: 15,
+    borderBottomWidth: 1.5,
+    borderBottomColor: colors.orange,
+    paddingBottom: 10,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: 700,
-    color: colors.white,
-    letterSpacing: 0.5,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.orange,
   },
   headerSubtitle: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.85)',
+    color: colors.gray,
     marginTop: 2,
   },
-  headerRight: {
-    alignItems: 'flex-end',
-  },
-  headerRightLabel: {
-    fontSize: 9,
-    color: 'rgba(255,255,255,0.75)',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  headerRightValue: {
-    fontSize: 16,
-    fontWeight: 700,
-    color: colors.white,
-    marginTop: 2,
-  },
-  body: {
-    padding: '16 36 8 36',
-    gap: 10,
+  // ── GRID SYSTEM ──
+  grid: {
+    flexDirection: 'row',
+    gap: 15,
+    marginBottom: 15,
   },
   section: {
-    marginBottom: 8,
+    flex: 1,
   },
   sectionTitle: {
-    fontSize: 8,
-    fontWeight: 700,
+    fontSize: 10,
+    fontWeight: 'bold',
     color: colors.gray,
     textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    marginBottom: 8,
+    letterSpacing: 1,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     paddingBottom: 4,
+    marginBottom: 8,
   },
-  infoGrid: {
+  // ── CLIENT DATA ──
+  infoRow: {
     flexDirection: 'row',
-    gap: 12,
-  },
-  infoBox: {
-    flex: 1,
-    backgroundColor: colors.lightGray,
-    borderRadius: 8,
-    padding: '10 12',
-    borderWidth: 1,
-    borderColor: colors.border,
+    marginBottom: 4,
   },
   infoLabel: {
-    fontSize: 8,
+    width: 80,
     color: colors.gray,
-    marginBottom: 3,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    fontWeight: 'normal',
   },
   infoValue: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: colors.dark,
+    fontWeight: 'bold',
   },
-  infoValueSm: {
-    fontSize: 10,
-    fontWeight: 700,
-    color: colors.dark,
-  },
-  table: {
+  // ── SUMMARY (LARGE TOTAL) ──
+  summaryBox: {
+    backgroundColor: colors.lightGray,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  summaryItem: {
+    alignItems: 'center',
+  },
+  summaryLabel: {
+    fontSize: 8,
+    color: colors.gray,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  summaryValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  totalBox: {
+    backgroundColor: colors.orange,
+    padding: '10 20',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  totalLabel: {
+    color: colors.white,
+    fontSize: 8,
+    textTransform: 'uppercase',
+    fontWeight: 'bold',
+  },
+  totalValue: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  // ── DETALHAMENTO TABLE ──
+  table: {
+    marginBottom: 15,
   },
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: colors.dark,
-    padding: '8 14',
+    padding: '6 10',
+    borderRadius: '4 4 0 0',
   },
   tableHeaderText: {
     color: colors.white,
     fontSize: 8,
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    flex: 1,
-  },
-  tableHeaderTextRight: {
-    color: colors.white,
-    fontSize: 8,
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    textAlign: 'right',
+    fontWeight: 'bold',
     flex: 1,
   },
   tableRow: {
     flexDirection: 'row',
-    padding: '10 14',
+    padding: '8 10',
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    alignItems: 'center',
   },
-  tableRowAlt: {
-    backgroundColor: '#FAFAFA',
-  },
-  tableCellLabel: {
+  tableCell: {
     flex: 1,
-    fontSize: 10,
-    color: colors.dark,
   },
-  tableCellValue: {
+  tableCellRight: {
     flex: 1,
-    fontSize: 10,
-    color: colors.dark,
     textAlign: 'right',
   },
-  totalRow: {
+  // ── ECONOMIA BLOCK ──
+  economyBox: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+  },
+  economyTitle: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: colors.green,
+    textAlign: 'center',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  economyGrid: {
     flexDirection: 'row',
-    padding: '12 14',
-    backgroundColor: '#FEF9EE',
-    borderTopWidth: 2,
-    borderTopColor: colors.orange,
+    justifyContent: 'space-around',
+  },
+  economyItem: {
     alignItems: 'center',
   },
-  totalLabel: {
-    flex: 1,
-    fontSize: 12,
-    fontWeight: 700,
-    color: colors.orange,
+  economyLabel: {
+    fontSize: 7,
+    color: colors.gray,
+    marginBottom: 2,
   },
-  totalValue: {
-    flex: 1,
+  economyValue: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  savingsHighlight: {
     fontSize: 14,
-    fontWeight: 700,
-    color: colors.orange,
-    textAlign: 'right',
+    color: colors.green,
   },
-  pixSection: {
-    backgroundColor: '#F0FDF4',
+  // ── PAGAMENTO PIX ──
+  pixBox: {
+    flexDirection: 'row',
+    gap: 20,
+    backgroundColor: '#F8FAFC',
+    padding: 15,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
-    padding: '10 14',
+    borderColor: colors.border,
     alignItems: 'center',
-  },
-  pixTitle: {
-    fontSize: 10,
-    fontWeight: 700,
-    color: '#15803D',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  pixKeyContainer: {
-    backgroundColor: colors.white,
-    borderRadius: 6,
-    padding: '8 15',
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-    marginTop: 4,
-    marginBottom: 6,
-    minWidth: '60%',
-    alignItems: 'center',
-  },
-  pixKey: {
-    fontSize: 8, // Further reduced for very long keys
-    fontWeight: 700,
-    color: colors.dark,
-    textAlign: 'center',
   },
   qrCode: {
     width: 100,
     height: 100,
-    marginTop: 10,
+    backgroundColor: colors.white,
+    padding: 5,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  pixNote: {
+  pixInfo: {
+    flex: 1,
+    gap: 8,
+  },
+  pixKeyBox: {
+    backgroundColor: colors.white,
+    padding: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  pixKey: {
     fontSize: 8,
-    color: colors.gray,
-    marginTop: 10,
-    lineHeight: 1.4,
+    fontFamily: 'Courier',
     textAlign: 'center',
   },
-  statusBadge: {
-    borderRadius: 100,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    alignSelf: 'flex-start',
-  },
-  statusText: {
-    fontSize: 9,
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  savingsSection: {
-    backgroundColor: '#F0F9FF',
-    padding: '8 12',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#BAE6FD',
-    marginTop: 6,
-  },
-  savingsTitle: {
-    fontSize: 9,
-    fontWeight: 700,
-    color: '#0369A1',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-  },
-  savingsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  savingsItem: {
-    alignItems: 'center',
-  },
-  savingsLabel: {
-    fontSize: 7,
-    color: '#0369A1',
-    marginBottom: 2,
-    textTransform: 'uppercase',
-  },
-  savingsValue: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: colors.dark,
-  },
+  // ── FOOTER ──
   footer: {
-    padding: '10 36',
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    right: 30,
     borderTopWidth: 1,
     borderTopColor: colors.border,
+    paddingTop: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
   footerText: {
     fontSize: 8,
     color: colors.gray,
-  },
-  footerBrand: {
-    fontSize: 8,
-    color: colors.orange,
-    fontWeight: 700,
   },
 });
 
@@ -308,13 +245,12 @@ const monthNames = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
-const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-  pending: { bg: '#FEF9C3', text: '#A16207', label: 'Pendente' },
-  receipt_sent: { bg: '#DBEAFE', text: '#1E40AF', label: 'Comprovante Enviado' },
-  awaiting_confirmation: { bg: '#F3E8FF', text: '#7E22CE', label: 'Aguardando Confirmação' },
-  paid:    { bg: '#DCFCE7', text: '#15803D', label: 'Paga' },
-  confirmed: { bg: '#D1FAE5', text: '#065F46', label: 'Confirmada (Baixa OK)' },
-  overdue: { bg: '#FEE2E2', text: '#B91C1C', label: 'Vencida' },
+const statusLabels: Record<string, string> = {
+  pending: 'PENDENTE',
+  receipt_sent: 'COMPROVANTE ENVIADO',
+  paid: 'PAGO',
+  confirmed: 'EFETIVADO',
+  overdue: 'VENCIDO',
 };
 
 export interface BillPDFProps {
@@ -352,180 +288,162 @@ export function BillPDF({
   pricePerKwh,
   utilityTariffUsed,
 }: BillPDFProps) {
-  const status = statusConfig[paymentStatus] ?? statusConfig.pending;
   const formattedDue = dueDate
     ? new Date(dueDate + 'T12:00:00').toLocaleDateString('pt-BR')
     : '-';
 
   const tariff = utilityTariffUsed || 1.13;
-  const estUtilityCostTotal = Number(injectedKwh) * tariff;
-  const totalSavings = estUtilityCostTotal - Number(solarValue);
+  const concessionariaCostEst = Number(injectedKwh) * tariff;
+  const totalSavings = concessionariaCostEst - Number(solarValue);
 
   return (
     <Document title={`Fatura_${clientName}_${monthNames[month-1]}`}>
       <Page size="A4" style={styles.page}>
-        {/* ──── HEADER ──── */}
+        {/* HEADER */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <View style={styles.sunIcon}>
-              <Text style={styles.sunText}>☀</Text>
-            </View>
-            <View>
-              <Text style={styles.headerTitle}>SolControle</Text>
-              <Text style={styles.headerSubtitle}>Gestão de Energia Solar</Text>
-            </View>
+          <View>
+            <Text style={styles.headerTitle}>SOLCONTROLE</Text>
+            <Text style={styles.headerSubtitle}>Gestão Inteligente de Energia Solar</Text>
           </View>
-          <View style={styles.headerRight}>
-            <Text style={styles.headerRightLabel}>Referência</Text>
-            <Text style={styles.headerRightValue}>
-              {monthNames[month - 1]}/{year}
-            </Text>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={{ fontSize: 10, fontWeight: 'bold' }}>FATURA DE SERVIÇOS</Text>
+            <Text style={{ fontSize: 14, fontWeight: 'bold', color: colors.orange }}>{monthNames[month-1]}/{year}</Text>
           </View>
         </View>
 
-        {/* ──── BODY ──── */}
-        <View style={styles.body}>
-
-          {/* Client & Unit Info */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Dados do Cliente</Text>
-            <View style={styles.infoGrid}>
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>Cliente</Text>
+        {/* DADOS DO CLIENTE */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Dados de Cobrança</Text>
+          <View style={styles.grid}>
+            <View style={styles.section}>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Cliente:</Text>
                 <Text style={styles.infoValue}>{clientName}</Text>
               </View>
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>UC</Text>
-                <Text style={styles.infoValueSm}>{unitName}</Text>
-              </View>
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>Vencimento</Text>
-                <Text style={styles.infoValue}>{formattedDue}</Text>
-              </View>
-              <View
-                style={[
-                  styles.infoBox,
-                  { backgroundColor: status.bg, borderColor: 'transparent' }
-                ]}
-              >
-                <Text style={styles.infoLabel}>Situação</Text>
-                <Text style={[styles.infoValue, { color: status.text }]}>
-                  {status.label}
-                </Text>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Unidade:</Text>
+                <Text style={styles.infoValue}>{unitName}</Text>
               </View>
             </View>
-          </View>
-
-          {/* Values Table */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Detalhamento Financeiro</Text>
-            <View style={styles.table}>
-              <View style={styles.tableHeader}>
-                <Text style={styles.tableHeaderText}>Descrição dos Serviços</Text>
-                <Text style={styles.tableHeaderTextRight}>Valor (R$)</Text>
-              </View>
-
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCellLabel}>
-                  ☀ Energia Injetada ({Number(injectedKwh).toFixed(2)} kWh
-                  {pricePerKwh ? ` × R$ ${Number(pricePerKwh).toFixed(4)}` : ''})
-                </Text>
-                <Text style={styles.tableCellValue}>
-                  {Number(solarValue).toFixed(2)}
-                </Text>
-              </View>
-
-              {Number(energisaValue) > 0 && (
-                <View style={[styles.tableRow, styles.tableRowAlt]}>
-                  <Text style={styles.tableCellLabel}>
-                    ⚡ Taxa Mínima / Disponibilidade (Concessionária)
-                  </Text>
-                  <Text style={styles.tableCellValue}>
-                    {Number(energisaValue).toFixed(2)}
-                  </Text>
-                </View>
-              )}
-
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>TOTAL A PAGAR (SolControle + Concessionária)</Text>
-                <Text style={styles.totalValue}>
-                  R$ {Number(totalAmount).toFixed(2)}
-                </Text>
-              </View>
-            </View>
-
-            {/* Savings Comparison */}
-            <View style={styles.savingsSection}>
-              <Text style={styles.savingsTitle}>📉 Comparativo de Economia (Transparência SolControle)</Text>
-              <View style={styles.savingsGrid}>
-                <View style={[styles.savingsItem, { alignItems: 'flex-start' }]}>
-                  <Text style={[styles.savingsLabel, { color: colors.red }]}>Custo na Concessionária (Est.)</Text>
-                  <Text style={[styles.savingsValue, { color: colors.red }]}>R$ {estUtilityCostTotal.toFixed(2)}</Text>
-                </View>
-                <View style={styles.savingsItem}>
-                  <Text style={styles.savingsLabel}>Seu Custo SolControle</Text>
-                  <Text style={styles.savingsValue}>R$ {Number(solarValue).toFixed(2)}</Text>
-                </View>
-                <View style={[styles.savingsItem, { borderLeftWidth: 1, borderLeftColor: '#BAE6FD', paddingLeft: 15 }]}>
-                  <Text style={[styles.savingsLabel, { color: colors.green, fontWeight: 700 }]}>Sua Economia Real</Text>
-                  <Text style={[styles.savingsValue, { color: colors.green }]}>R$ {totalSavings.toFixed(2)}</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* PIX Payment */}
-          {pixKey && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Instruções para Pagamento</Text>
-              <View style={styles.pixSection}>
-                <Text style={styles.pixTitle}>💚 Pague com PIX — Atendimento Prioritário</Text>
-                
-                <View style={[styles.pixKeyContainer, { paddingHorizontal: 20 }]}>
-                  <Text style={styles.infoLabel}>Chave PIX (Copie e Cole)</Text>
-                  <Text style={styles.pixKey}>
-                    {pixKey}
-                  </Text>
-                </View>
-
-                {pixReceiver && (
-                  <View style={{ marginTop: 2, marginBottom: 8 }}>
-                    <Text style={[styles.infoLabel, { textAlign: 'center' }]}>Destinatário (Titular)</Text>
-                    <Text style={{ fontSize: 9, fontWeight: 700, color: colors.dark, textAlign: 'center' }}>
-                      {pixReceiver}
-                    </Text>
-                  </View>
-                )}
-
-                {/* QR Code */}
-                <View style={{ alignItems: 'center', marginTop: 5 }}>
-                  <Text style={[styles.infoLabel, { marginBottom: 8 }]}>Ou aponte a câmera do banco para o QR Code:</Text>
-                  {pixQrUrl ? (
-                    <View style={{ backgroundColor: '#FFF', padding: 5, borderRadius: 8, borderWidth: 1, borderColor: '#EEE' }}>
-                      <Image src={pixQrUrl} style={{ width: 80, height: 80 }} />
-                    </View>
-                  ) : (
-                    <View style={{ width: 80, height: 80, backgroundColor: '#FFF', borderStyle: 'dashed', borderWidth: 1, borderColor: '#CCC', justifyContent: 'center', alignItems: 'center' }}>
-                      <Text style={{ fontSize: 7, color: '#999' }}>QR Code disponível no App SolControle</Text>
-                    </View>
-                  )}
-                </View>
-
-                <Text style={styles.pixNote}>
-                  Importante: O pagamento deve ser realizado até a data de vencimento.{'\n'}
-                  Após concluir, anexe o comprovante no seu painel SolControle para agilizar a baixa.
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Referência:</Text>
+                <Text style={styles.infoValue}>{monthNames[month-1]} {year}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Vencimento:</Text>
+                <Text style={[styles.infoValue, { color: colors.red }]}>{formattedDue}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Situação:</Text>
+                <Text style={[styles.infoValue, { color: paymentStatus === 'paid' || paymentStatus === 'confirmed' ? colors.green : colors.red }]}>
+                  {statusLabels[paymentStatus] || 'PENDENTE'}
                 </Text>
               </View>
             </View>
-          )}
+          </View>
         </View>
 
-        {/* ──── FOOTER ──── */}
+        {/* RESUMO DA FATURA */}
+        <View style={styles.summaryBox}>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>Energia Solar</Text>
+            <Text style={styles.summaryValue}>R$ {Number(solarValue).toFixed(2)}</Text>
+          </View>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>Concessionária</Text>
+            <Text style={styles.summaryValue}>R$ {Number(energisaValue).toFixed(2)}</Text>
+          </View>
+          <View style={styles.totalBox}>
+            <Text style={styles.totalLabel}>Total a Pagar</Text>
+            <Text style={styles.totalValue}>R$ {Number(totalAmount).toFixed(2)}</Text>
+          </View>
+        </View>
+
+        {/* DETALHAMENTO */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Detalhamento dos Serviços</Text>
+          <View style={styles.table}>
+            <View style={styles.tableHeader}>
+              <Text style={[styles.tableHeaderText, { flex: 2 }]}>Descrição</Text>
+              <Text style={styles.tableHeaderText}>Qtd (kWh)</Text>
+              <Text style={styles.tableHeaderText}>Tarifa (R$)</Text>
+              <Text style={[styles.tableHeaderText, { textAlign: 'right' }]}>Valor (R$)</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={[styles.tableCell, { flex: 2, fontWeight: 'bold' }]}>Serviço de Injeção Solar</Text>
+              <Text style={styles.tableCell}>{Number(injectedKwh).toFixed(2)}</Text>
+              <Text style={styles.tableCell}>{Number(pricePerKwh || 0).toFixed(4)}</Text>
+              <Text style={styles.tableCellRight}>{Number(solarValue).toFixed(2)}</Text>
+            </View>
+            {Number(energisaValue) > 0 && (
+              <View style={styles.tableRow}>
+                <Text style={[styles.tableCell, { flex: 2 }]}>Taxa de Disponibilidade (Concessionária)</Text>
+                <Text style={styles.tableCell}>-</Text>
+                <Text style={styles.tableCell}>-</Text>
+                <Text style={styles.tableCellRight}>{Number(energisaValue).toFixed(2)}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* ECONOMIA */}
+        <View style={styles.economyBox}>
+          <Text style={styles.economyTitle}>Economia com Energia Solar</Text>
+          <View style={styles.economyGrid}>
+            <View style={styles.economyItem}>
+              <Text style={styles.economyLabel}>Custo Sem Solar (Est.)</Text>
+              <Text style={[styles.economyValue, { color: colors.red }]}>R$ {concessionariaCostEst.toFixed(2)}</Text>
+            </View>
+            <View style={styles.economyItem}>
+              <Text style={styles.economyLabel}>Seu Custo SolControle</Text>
+              <Text style={styles.economyValue}>R$ {Number(solarValue).toFixed(2)}</Text>
+            </View>
+            <View style={styles.economyItem}>
+              <Text style={[styles.economyLabel, { color: colors.green, fontWeight: 'bold' }]}>Economia Total</Text>
+              <Text style={[styles.economyValue, styles.savingsHighlight]}>R$ {totalSavings.toFixed(2)}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* PAGAMENTO */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Instruções de Pagamento</Text>
+          <View style={styles.pixBox}>
+            <View style={styles.qrCode}>
+              {pixQrUrl ? (
+                <Image src={pixQrUrl} />
+              ) : (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 6, color: colors.gray, textAlign: 'center' }}>Acesse o App para ver o QR Code</Text>
+                </View>
+              )}
+            </View>
+            <View style={styles.pixInfo}>
+              <Text style={{ fontSize: 10, fontWeight: 'bold', color: colors.green }}>✓ Pagamento via PIX</Text>
+              <View>
+                <Text style={{ fontSize: 7, color: colors.gray, marginBottom: 2 }}>CHAVE PIX (Copia e Cola):</Text>
+                <View style={styles.pixKeyBox}>
+                  <Text style={styles.pixKey}>{pixKey || 'Não disponível'}</Text>
+                </View>
+              </View>
+              {pixReceiver && (
+                <View>
+                  <Text style={{ fontSize: 7, color: colors.gray, marginBottom: 2 }}>TITULAR:</Text>
+                  <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{pixReceiver}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* FOOTER */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Emitido em {new Date().toLocaleDateString('pt-BR')} via plataforma SolControle.
-          </Text>
-          <Text style={styles.footerBrand}>☀ SolControle</Text>
+          <View>
+            <Text style={styles.footerText}>Documento emitido automaticamente pelo sistema SolControle</Text>
+            <Text style={styles.footerText}>Data de emissão: {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}</Text>
+          </View>
+          <Text style={[styles.footerText, { fontWeight: 'bold', color: colors.orange }]}>www.solcontrole.com.br</Text>
         </View>
       </Page>
     </Document>
