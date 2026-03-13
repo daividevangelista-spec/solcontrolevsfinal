@@ -78,13 +78,21 @@ export default function AdminDashboard() {
         overdueClients: overdueClientIds.size,
       });
 
-      // Calculate Chart Data (Last 6 Months)
+      // Calculate Chart Data (Last 6 Months up to latest bill)
       const last6MonthsData: Record<string, ChartData> = {};
       const monthsShort = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
       
-      const today = new Date();
+      let refYear = new Date().getFullYear();
+      let refMonth = new Date().getMonth() + 1;
+      
+      if (allBills.length > 0) {
+        const sorted = [...allBills].sort((a,b) => (b.year * 12 + b.month) - (a.year * 12 + a.month));
+        refYear = sorted[0].year;
+        refMonth = sorted[0].month;
+      }
+      
       for (let i = 5; i >= 0; i--) {
-        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const d = new Date(refYear, refMonth - 1 - i, 1);
         const y = d.getFullYear();
         const m = d.getMonth() + 1;
         const key = `${y}-${m}`;

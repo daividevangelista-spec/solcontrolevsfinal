@@ -345,26 +345,31 @@ export default function AdminBills() {
   const handleOpenPrivateFile = async (url: string) => {
     if (!url) return;
     try {
-      if (!url.includes('supabase.co')) {
-        window.open(url, '_blank');
-        return;
-      }
-      
-      const parts = url.split('/storage/v1/object/public/invoices/');
-      if (parts.length < 2) {
-        window.open(url, '_blank');
-        return;
+      let filePath = url;
+      if (url.includes('/storage/v1/object/public/invoices/')) {
+        const parts = url.split('/storage/v1/object/public/invoices/');
+        if (parts.length >= 2) filePath = decodeURIComponent(parts[1]);
+      } else if (url.includes('/storage/v1/object/sign/invoices/')) {
+        const parts = url.split('/storage/v1/object/sign/invoices/');
+        if (parts.length >= 2) {
+          const purePath = parts[1].split('?')[0];
+          filePath = decodeURIComponent(purePath);
+        }
       }
 
-      const filePath = decodeURIComponent(parts[1]);
+      if (filePath.startsWith('http')) {
+         window.open(filePath, '_blank');
+         return;
+      }
       
       const { data, error } = await supabase.storage
         .from('invoices')
-        .createSignedUrl(filePath, 60);
+        .createSignedUrl(filePath, 60 * 60);
 
       if (error) {
         console.error('Storage sign error:', error);
-        window.open(url, '_blank');
+        toast.error('Erro de permissão no arquivo.');
+        window.open(url, '_blank'); // fallback
         return;
       }
       
