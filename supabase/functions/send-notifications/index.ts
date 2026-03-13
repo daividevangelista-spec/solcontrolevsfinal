@@ -184,63 +184,74 @@ serve(async (req) => {
             ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&qzone=1&data=${encodeURIComponent(pixCode)}`
             : null);
 
-          let message = "";
-          
-          if (notif.type === 'bill_reminder_3d') {
-            message = `⏰ *SolControle: Lembrete de Vencimento*\n\nSua fatura de energia solar de *${month}/${year}* vence em *3 dias* (${dueDate}).\n\n💰 *Valor:* ${amount}\n\n💳 *PIX Copia e Cola*\n${pixCode}\n\nEvite juros pagando em dia! ☀️`;
-          } else if (notif.type === 'bill_overdue') {
-            message = `⚠️ *SolControle: Aviso de Atraso*\n\nConstatamos que sua fatura de energia solar de *${month}/${year}* (vencida em ${dueDate}) ainda não foi paga.\n\n💰 *Valor:* ${amount}\n\n💳 *PIX Copia e Cola*\n${pixCode}\n\nRegularize sua situação para evitar encargos. Obrigado!`;
-          } else if (notif.type === 'payment_confirmed') {
-             message=`✅ *SolControle*\n\nPagamento confirmado!\n\nRecebemos seu pagamento de ${amount} referente a ${month}/${year}.\n\nObrigado!`;
-          } else {
-            const solarVal = (finalSolarValue !== undefined && finalSolarValue !== null)
-              ? `R$ ${Number(finalSolarValue).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
-              : 'R$ 0,00';
-            const portalUrl = `https://solcontrole-solar.vercel.app/login`;
-            const qrLinkSection = pixQrCode ? `\n\n📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}` : '';
+          let message1 = "";
+          let message2 = ""; 
+          let message3 = ""; 
 
-            message = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 Copia e Cola PIX:\n\n${pixCode}\n\n📷 QR Code PIX para pagamento será enviado logo abaixo.${qrLinkSection}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nObrigado por utilizar energia solar ☀️\n*SolControle*`;
+          const solarVal = (finalSolarValue !== undefined && finalSolarValue !== null)
+            ? `R$ ${Number(finalSolarValue).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
+            : 'R$ 0,00';
+          const portalUrl = `https://solcontrole-solar.vercel.app/login`;
+          const qrLink = pixQrCode ? `\n\n📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}` : '';
+
+          if (notif.type === 'bill_reminder_3d') {
+            message1 = `⏰ *SolControle: Lembrete de Vencimento*\n\nSua fatura de energia solar de *${month}/${year}* vence em *3 dias* (${dueDate}).\n\n💰 *Valor:* ${amount}\n💰 *Energia Solar:* ${solarVal}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 *Copia e Cola PIX:*`;
+            message2 = pixCode;
+            message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nEvite juros pagando em dia! ☀️\n*SolControle*`;
+          } else if (notif.type === 'bill_overdue') {
+            message1 = `⚠️ *SolControle: Aviso de Atraso*\n\nConstatamos que sua fatura de energia solar de *${month}/${year}* (vencida em ${dueDate}) ainda não foi paga.\n\n💰 *Valor:* ${amount}\n💰 *Energia Solar:* ${solarVal}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 *Copia e Cola PIX:*`;
+            message2 = pixCode;
+            message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nRegularize sua situação para evitar encargos. Obrigado!\n*SolControle*`;
+          } else if (notif.type === 'payment_confirmed') {
+             message1 = `✅ *SolControle*\n\nPagamento confirmado!\n\nRecebemos seu pagamento de ${amount} referente a ${month}/${year}.\n\nObrigado!`;
+          } else {
+            message1 = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 Copia e Cola PIX:`;
+            message2 = pixCode;
+            message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nObrigado por utilizar energia solar ☀️\n*SolControle*`;
           }
 
           const WHATSAPP_ENDPOINT = Deno.env.get("WHATSAPP_ENDPOINT") || "https://unantagonized-marceline-nonincriminating.ngrok-free.dev"
           const SOLCONTROLE_TOKEN = Deno.env.get("SOLCONTROLE_TOKEN") || "solcontrole_secret_token_2026"
-          
-          // Use sendText but mention QR code if available
-          const waRes=await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`,{
-            method:"POST",
-            headers:{
-              "Content-Type":"application/json",
-              "Authorization":`Bearer ${SOLCONTROLE_TOKEN}`
-            },
-            body:JSON.stringify({
-              phone: phone,
-              text: message
-            })
-          })
-          
-          if(!waRes.ok){
-            const errText = await waRes.text();
-            console.error(`Erro na Bridge WAHA (${waRes.status}):`, errText);
-            throw new Error(`WhatsApp Bridge Error: ${waRes.status}`);
+          const headers = {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${SOLCONTROLE_TOKEN}`
+          };
+
+          // --- SEND MESSAGE 1 (TEXT: INFO) ---
+          if (message1) {
+            await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
+              method: "POST", headers,
+              body: JSON.stringify({ phone, text: message1 })
+            }).catch(e => console.error("Erro Msg1:", e.message));
           }
 
-          console.log(`WhatsApp enviado com sucesso para ${phone}`);
+          // --- SEND MESSAGE 2 (TEXT: PIX CODE) ---
+          if (message2 && message2 !== "---") {
+            await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
+              method: "POST", headers,
+              body: JSON.stringify({ phone, text: message2 })
+            }).catch(e => console.error("Erro Msg2:", e.message));
+          }
 
-          // Message 2: If QR Code is available, send it as an image separately
-          if (pixQrCode && notif.type === 'bill_generated') {
-             console.log(`Enviando QR Code PIX como imagem para ${phone}`);
+          // --- SEND MESSAGE 3 (TEXT: LINKS - GUARANTEED) ---
+          if (message3) {
              await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${SOLCONTROLE_TOKEN}`
-                },
-                body: JSON.stringify({
-                  phone: phone,
-                  image: pixQrCode, // The bridge should detect 'image' and use /sendImage
-                  caption: "📷 QR Code PIX para pagamento"
-                })
-             }).catch(e => console.error("Erro ao enviar QR Code:", e.message));
+              method: "POST", headers,
+              body: JSON.stringify({ phone, text: message3 })
+            }).catch(e => console.error("Erro Msg3:", e.message));
+          }
+
+          // --- SEND MESSAGE 4 (IMAGE: QR CODE - OPTIONAL) ---
+          if (pixQrCode && (notif.type === 'bill_generated' || notif.type === 'bill_reminder_3d' || notif.type === 'bill_overdue')) {
+            console.log(`Enviando QR Code PIX como imagem para ${phone}`);
+            await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
+              method: "POST", headers,
+              body: JSON.stringify({
+                phone,
+                image: pixQrCode,
+                caption: "📷 QR Code para pagamento"
+              })
+            }).catch(e => console.error("Erro Msg4 (Imagem):", e.message));
           }
 
           sent=true
