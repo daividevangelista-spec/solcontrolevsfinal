@@ -1,0 +1,1 @@
+ALTER TABLE public.energy_settings ADD COLUMN IF NOT EXISTS pix_key text DEFAULT '';
