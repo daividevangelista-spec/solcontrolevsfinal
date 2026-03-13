@@ -97,6 +97,13 @@ serve(async (req) => {
 
     if (fetchError) throw fetchError
 
+    // Fetch global settings once to use as fallback for PIX/QR
+    const { data: globalSettings } = await supabase
+      .from('energy_settings')
+      .select('*')
+      .limit(1)
+      .maybeSingle();
+
     const results:any[] = []
 
     for (const notif of notifications) {
@@ -145,16 +152,33 @@ serve(async (req) => {
           if(!phone) throw new Error("Telefone não encontrado")
 
           const payload=notif.payload||{}
-          const amount=payload.amount
-            ? `R$ ${Number(payload.amount).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
+          
+          // NEW: Fetch fresh bill data to ensure values are updated (e.g., after bulk generate + edit)
+          const { data: billData } = await supabase
+            .from('energy_bills')
+            .select('*')
+            .eq('id', notif.bill_id)
+            .maybeSingle();
+
+          console.log(`Enviando WhatsApp para ${phone} via canal whatsapp. Tipo: ${notif.type}`);
+
+          const finalSolarValue = billData?.solar_energy_value ?? payload.solar_energy_value;
+          const finalTotalAmount = billData?.total_amount ?? payload.amount;
+          const finalDueDate = billData?.due_date ?? payload.due_date;
+          // Fallback hierarchy: Bill Record -> Notification Payload -> Global Settings
+          const finalPixCode = billData?.pix_copy_paste ?? payload.pix_key ?? globalSettings?.pix_key;
+          const finalPixQr = billData?.pix_qrcode_url ?? payload.pix_qrcode ?? globalSettings?.pix_qr_code_url;
+
+          const amount = finalTotalAmount
+            ? `R$ ${Number(finalTotalAmount).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
             : '---'
           const month=payload.month || ''
           const year=payload.year || ''
-          const dueDate=payload.due_date
-            ? new Date(payload.due_date+'T12:00:00').toLocaleDateString('pt-BR')
+          const dueDate = finalDueDate
+            ? new Date(finalDueDate+'T12:00:00').toLocaleDateString('pt-BR')
             : ''
-          const pixCode=payload.pix_key || "---"
-          const pixQrCode=payload.pix_qrcode
+          const pixCode = finalPixCode || "---"
+          const pixQrCode = finalPixQr
 
           let message = "";
           
@@ -165,22 +189,12 @@ serve(async (req) => {
           } else if (notif.type === 'payment_confirmed') {
              message=`✅ *SolControle*\n\nPagamento confirmado!\n\nRecebemos seu pagamento de ${amount} referente a ${month}/${year}.\n\nObrigado!`;
           } else {
-            // Updated PROFESSIONAL layout as requested
-            message=`🌞 *SolControle*
+            const solarVal = (finalSolarValue !== undefined && finalSolarValue !== null)
+              ? `R$ ${Number(finalSolarValue).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
+              : 'R$ 0,00';
+            const invoiceUrl = `https://solcontrole00-app.vercel.app/`;
 
-Sua fatura de energia solar está disponível.
-
-📅 Referência: ${month}/${year}
-💰 Valor: ${amount}
-📆 Vencimento: ${dueDate}
-
-💳 *PIX Copia e Cola*
-
-${pixCode}
-
-Escaneie o QR Code abaixo ou copie o código PIX.
-
-Obrigado por usar energia solar ☀️`;
+            message = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 Copia e Cola PIX:\n\n${pixCode}\n\n📷 QR Code PIX para pagamento será enviado logo abaixo.\n\n📄 *Acessar sua fatura completa:*\n${invoiceUrl}\n\nObrigado por utilizar energia solar ☀️\n*SolControle*`;
           }
 
           const WHATSAPP_ENDPOINT = Deno.env.get("WHATSAPP_ENDPOINT") || "https://unantagonized-marceline-nonincriminating.ngrok-free.dev"
@@ -198,14 +212,18 @@ Obrigado por usar energia solar ☀️`;
               text: message
             })
           })
-
+          
           if(!waRes.ok){
-            const err=await waRes.text()
-            throw new Error(err)
+            const errText = await waRes.text();
+            console.error(`Erro na Bridge WAHA (${waRes.status}):`, errText);
+            throw new Error(`WhatsApp Bridge Error: ${waRes.status}`);
           }
 
-          // If QR Code is available, send it as an image separately
+          console.log(`WhatsApp enviado com sucesso para ${phone}`);
+
+          // Message 2: If QR Code is available, send it as an image separately
           if (pixQrCode && notif.type === 'bill_generated') {
+             console.log(`Enviando QR Code PIX como imagem para ${phone}`);
              await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
                 method: "POST",
                 headers: {
@@ -214,7 +232,8 @@ Obrigado por usar energia solar ☀️`;
                 },
                 body: JSON.stringify({
                   phone: phone,
-                  text: pixQrCode // In a real WAHA setup, you'd use /sendImage, but here the bridge sends text
+                  image: pixQrCode, // The bridge should detect 'image' and use /sendImage
+                  caption: "📷 QR Code PIX para pagamento"
                 })
              }).catch(e => console.error("Erro ao enviar QR Code:", e.message));
           }

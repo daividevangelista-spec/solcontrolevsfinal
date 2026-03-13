@@ -16,25 +16,36 @@ app.post("/send-whatsapp", async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" })
   }
 
-  const { phone, text } = req.body
+  const { phone, text, image, caption } = req.body
 
   try {
+    let endpoint = "sendText"
+    let body = {
+      session: "default",
+      chatId: `${phone}@c.us`,
+      text: text
+    }
 
-    const response = await fetch("http://localhost:3000/api/sendText", {
+    if (image) {
+      endpoint = "sendImage"
+      body = {
+        session: "default",
+        chatId: `${phone}@c.us`,
+        file: image,
+        caption: caption || ""
+      }
+    }
+
+    const response = await fetch(`http://localhost:3000/api/${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Api-Key": "solcontrole123"
       },
-      body: JSON.stringify({
-        session: "default",
-        chatId: `${phone}@c.us`,
-        text: text
-      })
+      body: JSON.stringify(body)
     })
 
     const data = await response.json()
-
     res.json(data)
 
   } catch (err) {

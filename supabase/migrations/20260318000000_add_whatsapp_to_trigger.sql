@@ -11,6 +11,7 @@ DECLARE
     v_push_enabled BOOLEAN := true;
     v_pix_key TEXT;
     v_month_name TEXT;
+    v_savings NUMERIC;
 BEGIN
     -- 1. Identify User and Phone number via the correct path:
     -- energy_bills -> consumer_units -> clients -> profiles
@@ -49,6 +50,9 @@ BEGIN
         ELSE 'Mês ' || NEW.month
     END;
 
+    -- Calculate savings
+    v_savings := (COALESCE(NEW.injected_energy_kwh, 0) * COALESCE(NEW.utility_tariff_used, 1.13)) - COALESCE(NEW.solar_energy_value, 0);
+
     -- 4. Handle New Bill (INSERT)
     IF (TG_OP = 'INSERT') THEN
         -- Email
@@ -67,8 +71,12 @@ BEGIN
                     'year', NEW.year, 
                     'amount', NEW.total_amount, 
                     'due_date', NEW.due_date, 
+                    'concessionaria_value', NEW.concessionaria_value,
+                    'solar_energy_value', NEW.solar_energy_value,
+                    'savings', v_savings,
                     'pix_key', COALESCE(NEW.pix_copy_paste, v_pix_key),
-                    'pix_qrcode', NEW.pix_qrcode_url
+                    'pix_qrcode', NEW.pix_qrcode_url,
+                    'invoice_url', NEW.invoice_file_url
                 ));
         END IF;
 

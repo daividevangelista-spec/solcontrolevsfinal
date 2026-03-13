@@ -91,11 +91,19 @@ export default function AdminNotifications() {
     toast.loading('Processando fila de envio manual...', { id: 'manual-trigger' });
     try {
       const { data, error } = await supabase.functions.invoke('send-notifications');
-      if (error) throw error;
-      toast.success(`Foram processadas ${data?.processed || 0} notificações!`, { id: 'manual-trigger' });
+      
+      if (error) {
+        if (error.message?.includes('401') || error.status === 401) {
+          throw new Error('Não autorizado (401). Verifique se o JWT está habilitado na Edge Function ou se as chaves da Supabase estão corretas.');
+        }
+        throw error;
+      }
+      
+      toast.success(`Sucesso! Processadas ${data?.processed || 0} notificações.`, { id: 'manual-trigger' });
       load();
     } catch (err: any) {
-      toast.error('Erro ao chamar a Edge Function de envio: ' + err.message, { id: 'manual-trigger' });
+      console.error('Erro manualTrigger:', err);
+      toast.error('Erro ao processar: ' + (err.message || 'Erro desconhecido'), { id: 'manual-trigger', duration: 5000 });
     }
   };
 
