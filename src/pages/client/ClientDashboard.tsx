@@ -216,18 +216,29 @@ export default function ClientDashboard() {
   const handleOpenPrivateFile = async (url: string) => {
     if (!url) return;
     try {
-      if (url.includes('token=') || !url.includes('supabase.co')) {
+      if (!url.includes('supabase.co')) {
         window.open(url, '_blank');
         return;
       }
-      const urlObj = new URL(url);
-      const parts = urlObj.pathname.split('/storage/v1/object/public/');
-      if (parts.length < 2) { window.open(url, '_blank'); return; }
-      const fullPath = parts[1];
-      const bucket = fullPath.split('/')[0];
-      const path = fullPath.substring(bucket.length + 1);
-      const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60);
-      if (error) throw error;
+      
+      const parts = url.split('/storage/v1/object/public/invoices/');
+      if (parts.length < 2) {
+        window.open(url, '_blank');
+        return;
+      }
+
+      const filePath = decodeURIComponent(parts[1]);
+      
+      const { data, error } = await supabase.storage
+        .from('invoices')
+        .createSignedUrl(filePath, 60);
+
+      if (error) {
+        console.error('Storage sign error:', error);
+        window.open(url, '_blank'); // fallback to public if sign fails
+        return;
+      }
+      
       window.open(data.signedUrl, '_blank');
     } catch (err) {
       toast.error('Erro ao abrir o arquivo.');
@@ -573,12 +584,12 @@ export default function ClientDashboard() {
             <div className="space-y-6 pt-12 border-t border-border/50 pb-20">
               <div className="flex items-center justify-between"><h2 className="text-2xl font-black uppercase flex items-center gap-2"><CalendarDays className="w-6 h-6 text-muted-foreground" /> Histórico Completo</h2></div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {bills.slice(1).map((b, idx) => (
+                {bills.map((b, idx) => (
                   <motion.div key={b.id} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.05 }}>
                     <Card className="modern-card group border-t-4 border-t-muted">
                       <CardContent className="p-6 space-y-4">
                         <div className="flex justify-between items-start"><div><p className="text-[10px] font-black text-muted-foreground uppercase">{monthsFull[b.month-1]} {b.year}</p><p className="text-xl font-black">R$ {b.total_amount.toFixed(2)}</p></div><Badge className={`${statusColors[b.payment_status]} text-[9px] font-black`}>{statusLabels[b.payment_status]}</Badge></div>
-                        <div className="flex gap-2">{b.invoice_file_url && <Button variant="secondary" size="sm" className="flex-1 text-[10px] font-black" onClick={() => handleDownloadPDF(b)}>PDF</Button>}{b.solar_payment_proof_url && <Button variant="outline" size="icon" onClick={() => handleOpenPrivateFile(b.solar_payment_proof_url!)}><Eye className="w-4 h-4 text-success" /></Button>}</div>
+                        <div className="flex gap-2">{b.invoice_file_url && <Button variant="secondary" size="sm" className="flex-1 text-[10px] font-black" onClick={() => handleDownloadPDF(b)}>PDF</Button>}{(b.solar_payment_proof_url || b.concessionaria_bill_url || b.energisa_bill_file_url) && <Button variant="outline" size="icon" onClick={() => handleOpenPrivateFile((b.solar_payment_proof_url || b.concessionaria_bill_url || b.energisa_bill_file_url)!)}><Eye className="w-4 h-4 text-success" /></Button>}</div>
                       </CardContent>
                     </Card>
                   </motion.div>

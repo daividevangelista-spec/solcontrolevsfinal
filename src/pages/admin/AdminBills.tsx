@@ -345,20 +345,29 @@ export default function AdminBills() {
   const handleOpenPrivateFile = async (url: string) => {
     if (!url) return;
     try {
-      if (url.includes('token=') || !url.includes('supabase.co')) {
+      if (!url.includes('supabase.co')) {
         window.open(url, '_blank');
         return;
       }
-      const urlObj = new URL(url);
-      const parts = urlObj.pathname.split('/storage/v1/object/public/');
-      if (parts.length < 2) { window.open(url, '_blank'); return; }
       
-      const fullPath = parts[1];
-      const bucket = fullPath.split('/')[0];
-      const path = fullPath.substring(bucket.length + 1);
+      const parts = url.split('/storage/v1/object/public/invoices/');
+      if (parts.length < 2) {
+        window.open(url, '_blank');
+        return;
+      }
 
-      const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60);
-      if (error) throw error;
+      const filePath = decodeURIComponent(parts[1]);
+      
+      const { data, error } = await supabase.storage
+        .from('invoices')
+        .createSignedUrl(filePath, 60);
+
+      if (error) {
+        console.error('Storage sign error:', error);
+        window.open(url, '_blank');
+        return;
+      }
+      
       window.open(data.signedUrl, '_blank');
     } catch (err) {
       toast.error('Erro ao abrir o arquivo.');

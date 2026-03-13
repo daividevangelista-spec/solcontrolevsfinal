@@ -44,7 +44,6 @@ const adminGroups = [
 const clientLinks = [
   { to: '/dashboard', label: 'Início', icon: LayoutDashboard },
   { to: '/dashboard/bills', label: 'Faturas', icon: FileText },
-  { to: '/dashboard/payments', label: 'Extrato', icon: History },
   { to: '/dashboard/settings', label: 'Perfil', icon: Settings },
 ];
 

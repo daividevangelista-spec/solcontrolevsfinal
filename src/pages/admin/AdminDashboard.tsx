@@ -24,7 +24,10 @@ interface Metrics {
   paidBills: number;
   overdueBills: number;
   totalEnergyConsumed: number;
-  totalRevenue: number;
+  totalFaturado: number;
+  totalRecebido: number;
+  totalPendente: number;
+  totalVencido: number;
   overdueClients: number;
 }
 
@@ -39,7 +42,8 @@ interface ChartData {
 export default function AdminDashboard() {
   const [metrics, setMetrics] = useState<Metrics>({
     totalClients: 0, totalUnits: 0, totalBills: 0, pendingBills: 0,
-    paidBills: 0, overdueBills: 0, totalEnergyConsumed: 0, totalRevenue: 0, overdueClients: 0,
+    paidBills: 0, overdueBills: 0, totalEnergyConsumed: 0, 
+    totalFaturado: 0, totalRecebido: 0, totalPendente: 0, totalVencido: 0, overdueClients: 0,
   });
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const navigate = useNavigate();
@@ -49,11 +53,13 @@ export default function AdminDashboard() {
       const [clients, units, bills] = await Promise.all([
         supabase.from('clients').select('id', { count: 'exact', head: true }),
         supabase.from('consumer_units').select('id', { count: 'exact', head: true }),
-        supabase.from('energy_bills').select('*, consumer_units!inner(client_id)'),
+        supabase.from('energy_bills').select('*, consumer_units(client_id)'),
 
       ]);
 
       const allBills = (bills.data as any[]) || [];
+      const pendingBills = allBills.filter(b => b.payment_status === 'pending');
+      const paidBills = allBills.filter(b => b.payment_status === 'paid' || b.payment_status === 'confirmed');
       const overdueBills = allBills.filter(b => b.payment_status === 'overdue');
       const overdueClientIds = new Set(overdueBills.map(b => b.consumer_units?.client_id).filter(Boolean));
 
@@ -61,11 +67,14 @@ export default function AdminDashboard() {
         totalClients: clients.count || 0,
         totalUnits: units.count || 0,
         totalBills: allBills.length,
-        pendingBills: allBills.filter(b => b.payment_status === 'pending').length,
-        paidBills: allBills.filter(b => b.payment_status === 'paid').length,
+        pendingBills: pendingBills.length,
+        paidBills: paidBills.length,
         overdueBills: overdueBills.length,
-        totalEnergyConsumed: allBills.reduce((sum, b) => sum + Number(b.injected_energy_kwh || b.consumption_kwh), 0),
-        totalRevenue: allBills.filter(b => b.payment_status === 'paid').reduce((sum, b) => sum + Number(b.solar_energy_value || b.total_amount), 0),
+        totalEnergyConsumed: allBills.reduce((sum, b) => sum + Number(b.injected_energy_kwh || b.consumption_kwh || 0), 0),
+        totalFaturado: allBills.reduce((sum, b) => sum + Number(b.solar_energy_value || b.total_amount || 0), 0),
+        totalRecebido: paidBills.reduce((sum, b) => sum + Number(b.solar_energy_value || b.total_amount || 0), 0),
+        totalPendente: pendingBills.reduce((sum, b) => sum + Number(b.solar_energy_value || b.total_amount || 0), 0),
+        totalVencido: overdueBills.reduce((sum, b) => sum + Number(b.solar_energy_value || b.total_amount || 0), 0),
         overdueClients: overdueClientIds.size,
       });
 
@@ -92,11 +101,15 @@ export default function AdminDashboard() {
         const key = `${b.year}-${b.month}`;
         if (last6MonthsData[key]) {
           last6MonthsData[key].injectedEnergy += Number(b.injected_energy_kwh || b.consumption_kwh || 0);
-          last6MonthsData[key].solarRevenue += Number(b.solar_energy_value || b.total_amount || 0);
+          
+          if (b.payment_status === 'paid' || b.payment_status === 'confirmed') {
+            last6MonthsData[key].solarRevenue += Number(b.solar_energy_value || b.total_amount || 0);
+          }
+          
           if (b.payment_status === 'overdue') {
             last6MonthsData[key].overdueBills += 1;
           }
-          last6MonthsData[key].energisaValue += Number(b.energisa_bill_value || 0);
+          last6MonthsData[key].energisaValue += Number(b.energisa_bill_value || b.concessionaria_value || 0);
         }
       });
 
@@ -106,18 +119,21 @@ export default function AdminDashboard() {
   }, []);
 
   const analyticsCards = [
-    { label: 'Energia Total Consumida', value: `${metrics.totalEnergyConsumed.toLocaleString('pt-BR')} kWh`, icon: TrendingUp, color: 'text-info' },
-    { label: 'Receita Total', value: `R$ ${metrics.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: DollarSign, color: 'text-success' },
-    { label: 'Clientes Inadimplentes', value: metrics.overdueClients, icon: AlertTriangle, color: 'text-destructive' },
+    { label: 'Total Faturado', value: `R$ ${metrics.totalFaturado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: TrendingUp, color: 'text-info' },
+    { label: 'Total Recebido', value: `R$ ${metrics.totalRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: CheckCircle, color: 'text-success' },
+    { label: 'Total Pendente', value: `R$ ${metrics.totalPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: Clock, color: 'text-warning' },
+    { label: 'Total Vencido', value: `R$ ${metrics.totalVencido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: AlertTriangle, color: 'text-destructive' },
+    { label: 'Total Injetado (kWh)', value: `${metrics.totalEnergyConsumed.toLocaleString('pt-BR')} kWh`, icon: Zap, color: 'text-primary' },
+    { label: 'Clientes em Atraso', value: metrics.overdueClients, icon: Users, color: 'text-destructive' },
   ];
 
   return (
     <div className="space-y-8 animate-fade-in">
       <DashboardHero 
         highlights={[
-          { label: 'Receita Total', value: `R$ ${metrics.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: DollarSign },
-          { label: 'Energia Gerada', value: `${metrics.totalEnergyConsumed.toLocaleString('pt-BR')} kWh`, icon: Zap },
-          { label: 'Clientes Ativos', value: String(metrics.totalClients), icon: Users },
+          { label: 'Total Recebido', value: `R$ ${metrics.totalRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: DollarSign },
+          { label: 'Total Faturado', value: `R$ ${metrics.totalFaturado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: TrendingUp },
+          { label: 'Total Vencido', value: `R$ ${metrics.totalVencido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: AlertTriangle },
         ]}
       />
 

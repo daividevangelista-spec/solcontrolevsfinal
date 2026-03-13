@@ -66,41 +66,33 @@ export default function ClientBills() {
       if (!user) return;
       setLoading(true);
       try {
-        // Step 1: get the client linked to this user
-        const { data: clientData, error: clientError } = await supabase
-          .from('clients')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle();
+        let loadedBills: any[] = [];
+        const { data, error: billsError } = await supabase
+          .from('energy_bills')
+          .select('*, consumer_units(unit_name, clients(*))')
+          .order('due_date', { ascending: false });
+          
+        if (billsError) throw billsError;
+        loadedBills = data || [];
 
-        if (clientError) throw clientError;
-
-        if (clientData) {
-          // Step 2: get consumer_unit IDs for this client
-          const { data: unitsData } = await supabase
-            .from('consumer_units')
-            .select('id')
-            .eq('client_id', clientData.id);
-
-          const unitIds = (unitsData || []).map((u: any) => u.id);
-
-          if (unitIds.length === 0) {
-            setBills([]);
-            return;
+        // Auto-link logic if no bills and user not linked
+        if (loadedBills.length === 0 && user.email) {
+          const { data: linkedClients } = await supabase.from('clients').select('id').eq('user_id', user.id);
+          if (!linkedClients || linkedClients.length === 0) {
+            const { data: emailMatch } = await supabase.from('clients').select('id, user_id').ilike('email', user.email).maybeSingle();
+            if (emailMatch && !emailMatch.user_id) {
+              await supabase.from('clients').update({ user_id: user.id }).eq('id', emailMatch.id);
+              // Retry fetch
+              const { data: retryData } = await supabase
+                .from('energy_bills')
+                .select('*, consumer_units(unit_name, clients(*))')
+                .order('due_date', { ascending: false });
+              loadedBills = retryData || [];
+            }
           }
-
-          // Step 3: get all bills for those units (no status filter — show pending, paid, overdue)
-          const { data, error: billsError } = await supabase
-            .from('energy_bills')
-            .select('*, consumer_units(unit_name, clients(name, override_pix, custom_pix_key, custom_pix_qr_code_url, custom_pix_receiver, price_per_kwh))')
-            .in('consumer_unit_id', unitIds)
-            .order('due_date', { ascending: false });
-            
-          if (billsError) throw billsError;
-          setBills((data as any) || []);
-        } else {
-          setBills([]);
         }
+
+        setBills(loadedBills);
       } catch (error) {
         console.error('Error loading bills:', error);
         toast.error('Erro ao carregar histórico de faturas');
@@ -160,25 +152,32 @@ export default function ClientBills() {
   const handleOpenPrivateFile = async (url: string) => {
     if (!url) return;
     try {
-      if (url.includes('token=') || !url.includes('supabase.co')) {
+      if (!url.includes('supabase.co')) {
         window.open(url, '_blank');
         return;
       }
-      const urlObj = new URL(url);
-      const parts = urlObj.pathname.split('/storage/v1/object/public/');
+      
+      const parts = url.split('/storage/v1/object/public/invoices/');
       if (parts.length < 2) {
         window.open(url, '_blank');
         return;
       }
-      const fullPath = parts[1];
-      const bucket = fullPath.split('/')[0];
-      const path = fullPath.substring(bucket.length + 1);
-      const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60);
-      if (error) throw error;
+
+      const filePath = decodeURIComponent(parts[1]);
+      
+      const { data, error } = await supabase.storage
+        .from('invoices')
+        .createSignedUrl(filePath, 60);
+
+      if (error) {
+        console.error('Storage sign error:', error);
+        window.open(url, '_blank');
+        return;
+      }
+      
       window.open(data.signedUrl, '_blank');
     } catch (err) {
-      console.error('Error creating signed URL:', err);
-      toast.error('Erro ao abrir o arquivo. Tente novamente.');
+      toast.error('Erro ao abrir o arquivo.');
     }
   };
 

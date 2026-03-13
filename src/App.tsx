@@ -22,7 +22,6 @@ import AdminWhatsApp from "@/pages/admin/AdminWhatsApp";
 
 import ClientDashboard from "@/pages/client/ClientDashboard";
 import ClientBills from "@/pages/client/ClientBills";
-import ClientPayments from "@/pages/client/ClientPayments";
 import ClientSettings from "@/pages/client/ClientSettings";
 
 import NotFound from "./pages/NotFound";
@@ -64,7 +63,6 @@ const App = () => (
               {/* Client routes */}
               <Route path="/dashboard" element={<ProtectedRoute requiredRole="client"><AppLayout><ClientDashboard /></AppLayout></ProtectedRoute>} />
               <Route path="/dashboard/bills" element={<ProtectedRoute requiredRole="client"><AppLayout><ClientBills /></AppLayout></ProtectedRoute>} />
-              <Route path="/dashboard/payments" element={<ProtectedRoute requiredRole="client"><AppLayout><ClientPayments /></AppLayout></ProtectedRoute>} />
               <Route path="/dashboard/settings" element={<ProtectedRoute requiredRole="client"><AppLayout><ClientSettings /></AppLayout></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
