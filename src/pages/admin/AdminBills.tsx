@@ -48,9 +48,9 @@ interface Bill {
     clients?: { 
       name: string;
       override_pix: boolean;
-      custom_pix_key: string | null;
-      custom_pix_qr_code_url: string | null;
-      custom_pix_receiver: string | null;
+      pix_key: string | null;
+      pix_qrcode_url: string | null;
+      pix_holder_name: string | null;
     } | null;
   } | null;
 }
@@ -128,7 +128,7 @@ export default function AdminBills() {
     try {
       const { data: billsData } = await supabase
         .from('energy_bills')
-        .select('*, consumer_units(unit_name, clients(name, override_pix, custom_pix_key, custom_pix_qr_code_url, custom_pix_receiver))')
+        .select('*, consumer_units(unit_name, clients(name, override_pix, pix_key, pix_qrcode_url, pix_holder_name))')
         .order('year', { ascending: false })
         .order('month', { ascending: false });
       
@@ -283,9 +283,9 @@ export default function AdminBills() {
     const toastId = toast.loading('Gerando PDF...');
     try {
       const client = b.consumer_units?.clients;
-      const finalPixKey = client?.override_pix ? (client?.custom_pix_key?.trim() || pixKey) : pixKey;
-      const finalPixQr = client?.override_pix ? (client?.custom_pix_qr_code_url?.trim() || pixQrUrl) : pixQrUrl;
-      const finalPixReceiver = client?.override_pix ? (client?.custom_pix_receiver?.trim() || pixReceiver) : pixReceiver;
+      const finalPixKey = client?.override_pix ? (client?.pix_key?.trim() || pixKey) : pixKey;
+      const finalPixQr = client?.override_pix ? (client?.pix_qrcode_url?.trim() || pixQrUrl) : pixQrUrl;
+      const finalPixReceiver = client?.override_pix ? (client?.pix_holder_name?.trim() || pixReceiver) : pixReceiver;
 
       const blob = await pdf(
         <BillPDF

@@ -168,6 +168,7 @@ serve(async (req) => {
           // Fallback hierarchy: Bill Record -> Notification Payload -> Global Settings
           const finalPixCode = billData?.pix_copy_paste ?? payload.pix_key ?? globalSettings?.pix_key;
           const finalPixQr = billData?.pix_qrcode_url ?? payload.pix_qrcode ?? globalSettings?.pix_qr_code_url;
+          const finalPixHolder = billData?.pix_holder_name ?? payload.pix_holder_name ?? globalSettings?.pix_receiver;
 
           const amount = finalTotalAmount
             ? `R$ ${Number(finalTotalAmount).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
@@ -178,6 +179,7 @@ serve(async (req) => {
             ? new Date(finalDueDate+'T12:00:00').toLocaleDateString('pt-BR')
             : ''
           const pixCode = finalPixCode || "---"
+          const pixHolder = finalPixHolder || "---"
           
           // Dynamic QR Fallback: If no static URL, generate one from the PIX code
           const pixQrCode = finalPixQr || (pixCode !== "---" 
@@ -195,17 +197,17 @@ serve(async (req) => {
           const qrLink = pixQrCode ? `\n\n📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}` : '';
 
           if (notif.type === 'bill_reminder_3d') {
-            message1 = `⏰ *SolControle: Lembrete de Vencimento*\n\nSua fatura de energia solar de *${month}/${year}* vence em *3 dias* (${dueDate}).\n\n💰 *Valor:* ${amount}\n💰 *Energia Solar:* ${solarVal}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 *Copia e Cola PIX:*`;
+            message1 = `⏰ *SolControle: Lembrete de Vencimento*\n\nSua fatura de energia solar de *${month}/${year}* vence em *3 dias* (${dueDate}).\n\n💰 *Valor:* ${amount}\n💰 *Energia Solar:* ${solarVal}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 *Titular:* ${pixHolder}\n\n🔹 *Copia e Cola PIX:*`;
             message2 = pixCode;
             message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nEvite juros pagando em dia! ☀️\n*SolControle*`;
           } else if (notif.type === 'bill_overdue') {
-            message1 = `⚠️ *SolControle: Aviso de Atraso*\n\nConstatamos que sua fatura de energia solar de *${month}/${year}* (vencida em ${dueDate}) ainda não foi paga.\n\n💰 *Valor:* ${amount}\n💰 *Energia Solar:* ${solarVal}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 *Copia e Cola PIX:*`;
+            message1 = `⚠️ *SolControle: Aviso de Atraso*\n\nConstatamos que sua fatura de energia solar de *${month}/${year}* (vencida em ${dueDate}) ainda não foi paga.\n\n💰 *Valor:* ${amount}\n💰 *Energia Solar:* ${solarVal}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 *Titular:* ${pixHolder}\n\n🔹 *Copia e Cola PIX:*`;
             message2 = pixCode;
             message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nRegularize sua situação para evitar encargos. Obrigado!\n*SolControle*`;
           } else if (notif.type === 'payment_confirmed') {
              message1 = `✅ *SolControle*\n\nPagamento confirmado!\n\nRecebemos seu pagamento de ${amount} referente a ${month}/${year}.\n\nObrigado!`;
           } else {
-            message1 = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n🔹 Copia e Cola PIX:`;
+            message1 = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 *Titular:* ${pixHolder}\n\n🔹 Copia e Cola PIX:`;
             message2 = pixCode;
             message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nObrigado por utilizar energia solar ☀️\n*SolControle*`;
           }

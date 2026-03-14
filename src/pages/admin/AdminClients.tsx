@@ -22,9 +22,9 @@ interface Client {
   tier_price_low: number | null;
   tier_price_high: number | null;
   override_pix: boolean | null;
-  custom_pix_key: string | null;
-  custom_pix_qr_code_url: string | null;
-  custom_pix_receiver: string | null;
+  pix_key: string | null;
+  pix_qrcode_url: string | null;
+  pix_holder_name: string | null;
 }
 
 export default function AdminClients() {
@@ -34,7 +34,7 @@ export default function AdminClients() {
   const [form, setForm] = useState({ 
     name: '', email: '', phone: '', address: '', notes: '',
     tier_enabled: false, tier_limit_kwh: 800, tier_price_low: 0, tier_price_high: 0,
-    override_pix: false, custom_pix_key: '', custom_pix_qr_code_url: '', custom_pix_receiver: ''
+    override_pix: false, pix_key: '', pix_qrcode_url: '', pix_holder_name: ''
   });
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export default function AdminClients() {
       setForm({ 
         name: '', email: '', phone: '', address: '', notes: '',
         tier_enabled: false, tier_limit_kwh: 800, tier_price_low: 0, tier_price_high: 0,
-        override_pix: false, custom_pix_key: '', custom_pix_qr_code_url: '', custom_pix_receiver: ''
+        override_pix: false, pix_key: '', pix_qrcode_url: '', pix_holder_name: ''
       });
       load();
     } catch (err: any) {
@@ -115,7 +115,7 @@ export default function AdminClients() {
       }
       
       const { data: urlData } = supabase.storage.from('qrcodes').getPublicUrl(path);
-      setForm(prev => ({ ...prev, custom_pix_qr_code_url: urlData.publicUrl }));
+      setForm(prev => ({ ...prev, pix_qrcode_url: urlData.publicUrl }));
       toast.success('QR Code enviado com sucesso!');
     } catch (err: any) {
       console.error('QR Upload error summary:', err);
@@ -142,9 +142,9 @@ export default function AdminClients() {
       tier_price_low: client.tier_price_low || 0,
       tier_price_high: client.tier_price_high || 0,
       override_pix: client.override_pix || false,
-      custom_pix_key: client.custom_pix_key || '',
-      custom_pix_qr_code_url: client.custom_pix_qr_code_url || '',
-      custom_pix_receiver: (client as any).custom_pix_receiver || ''
+      pix_key: client.pix_key || '',
+      pix_qrcode_url: client.pix_qrcode_url || '',
+      pix_holder_name: client.pix_holder_name || ''
     });
     setOpen(true);
   };
@@ -154,7 +154,7 @@ export default function AdminClients() {
     setForm({ 
       name: '', email: '', phone: '', address: '', notes: '',
       tier_enabled: false, tier_limit_kwh: 800, tier_price_low: 0, tier_price_high: 0,
-      override_pix: false, custom_pix_key: '', custom_pix_qr_code_url: '', custom_pix_receiver: ''
+      override_pix: false, pix_key: '', pix_qrcode_url: '', pix_holder_name: ''
     });
     setOpen(true);
   };
@@ -234,15 +234,15 @@ export default function AdminClients() {
                   {form.override_pix && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1.5"><Label className="text-[10px] font-black opacity-60">Chave PIX</Label><Input value={form.custom_pix_key} onChange={e => setForm({...form, custom_pix_key: e.target.value})} className="h-10 rounded-lg" /></div>
-                        <div className="space-y-1.5"><Label className="text-[10px] font-black opacity-60">Titular da Conta</Label><Input value={form.custom_pix_receiver} onChange={e => setForm({...form, custom_pix_receiver: e.target.value})} className="h-10 rounded-lg" /></div>
+                        <div className="space-y-1.5"><Label className="text-[10px] font-black opacity-60">Chave PIX</Label><Input value={form.pix_key} onChange={e => setForm({...form, pix_key: e.target.value})} className="h-10 rounded-lg" /></div>
+                        <div className="space-y-1.5"><Label className="text-[10px] font-black opacity-60">Titular da Conta</Label><Input value={form.pix_holder_name} onChange={e => setForm({...form, pix_holder_name: e.target.value})} className="h-10 rounded-lg" /></div>
                       </div>
                       
                       <div className="bg-white/50 p-3 rounded-xl border border-info/10 flex items-center gap-6">
-                        {(previewUrl || form.custom_pix_qr_code_url) ? (
+                        {(previewUrl || form.pix_qrcode_url) ? (
                           <div className="relative group">
-                            <img src={previewUrl || form.custom_pix_qr_code_url || ''} alt="QR Code" className="w-20 h-20 object-contain rounded-lg border bg-white p-1" />
-                            <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => { setForm({...form, custom_pix_qr_code_url: ''}); setPreviewUrl(null); }}>
+                            <img src={previewUrl || form.pix_qrcode_url || ''} alt="QR Code" className="w-20 h-20 object-contain rounded-lg border bg-white p-1" />
+                            <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => { setForm({...form, pix_qrcode_url: ''}); setPreviewUrl(null); }}>
                               <Trash2 className="w-3 h-3" />
                             </Button>
                           </div>
