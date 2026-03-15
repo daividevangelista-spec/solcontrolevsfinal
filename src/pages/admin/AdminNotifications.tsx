@@ -90,26 +90,28 @@ export default function AdminNotifications() {
   const manualTrigger = async () => {
     toast.loading('Iniciando processamento manual...', { id: 'manual-trigger' });
     try {
-      console.log("Invocando Edge Function: send-notifications...");
+      console.log("Obtendo sessão para autenticação...");
+      const { data: { session } } = await supabase.auth.getSession();
       
+      if (!session) {
+        throw new Error('Sessão não encontrada. Por favor, faça login novamente.');
+      }
+
+      console.log("Invocando Edge Function: send-notifications...");
       const { data, error } = await supabase.functions.invoke('send-notifications', {
         body: {},
         headers: {
-          // Explicitly pass the token if needed, though invoke usually handles it
-          // Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          Authorization: `Bearer ${session.access_token}`,
         }
       });
       
       if (error) {
         console.error("Erro retornado pela Function:", error);
-        
-        // Handle Supabase Gateway errors or Function returns
         const status = (error as any).status || 500;
         if (status === 401) {
-          throw new Error('Não autorizado (401). A função exige um login ativo de administrador.');
+          throw new Error('Não autorizado (401). Verifique se o JWT está ativado no Dashboard ou se o token expirou.');
         }
-        
-        throw new Error(error.message || 'Erro ao processar notificações na nuvem.');
+        throw new Error(error.message || 'Erro ao processar notificações.');
       }
       
       console.log("Resposta da Function:", data);
@@ -117,7 +119,7 @@ export default function AdminNotifications() {
       load();
     } catch (err: any) {
       console.error('Erro manualTrigger:', err);
-      toast.error('Erro ao processar: ' + (err.message || 'Erro deconhecido'), { id: 'manual-trigger', duration: 6000 });
+      toast.error('Erro ao processar: ' + (err.message || 'Erro desconhecido'), { id: 'manual-trigger', duration: 6000 });
     }
   };
 

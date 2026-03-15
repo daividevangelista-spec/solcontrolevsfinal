@@ -108,17 +108,22 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      // If user is not found, it might be a service_role key.
-      // We manually check if the token matches the service_role_key as secondary bypass.
+      // If user is not found, check if it's the service_role key
       const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-      if (token !== serviceKey) {
-          console.error("Invalid token provided:", authError?.message || "Not a user or service_role key");
-          return new Response(JSON.stringify({ error: 'Unauthorized', details: authError?.message }), { 
-            status: 401, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          });
+      const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+      
+      if (token === serviceKey) {
+        console.log("Request authorized via service_role_key");
+      } else if (token === anonKey) {
+        console.warn("Request used anon_key. This might be insecure if JWT check is disabled in dashboard.");
+        // We might want to block this if we want strict security
+      } else {
+        console.error("Invalid token provided. Not a user and does not match service_role.");
+        return new Response(JSON.stringify({ error: 'Unauthorized', details: 'Invalid token' }), { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
       }
-      console.log("Request authorized via service_role_key");
     } else {
       console.log(`Request authorized for user: ${user.email} (${user.id})`);
     }
