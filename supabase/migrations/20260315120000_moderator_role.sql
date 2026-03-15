@@ -74,12 +74,20 @@ FOR ALL USING (
 );
 
 -- 8. Policies for user_roles (Moderators can view but not change)
+DROP POLICY IF EXISTS "Admins manage roles" ON public.user_roles;
 DROP POLICY IF EXISTS "Admins can manage roles" ON public.user_roles;
 CREATE POLICY "Admins manage roles" ON public.user_roles
 FOR ALL TO authenticated
 USING (public.has_role(auth.uid(), 'admin'))
 WITH CHECK (public.has_role(auth.uid(), 'admin'));
 
+DROP POLICY IF EXISTS "Moderators can view roles" ON public.user_roles;
 CREATE POLICY "Moderators can view roles" ON public.user_roles
 FOR SELECT TO authenticated
 USING (public.has_role(auth.uid(), 'moderator'));
+
+-- 9. Add explicit relationship for join (PostgREST requirement)
+ALTER TABLE public.user_roles 
+DROP CONSTRAINT IF EXISTS user_roles_user_id_fkey_profiles,
+ADD CONSTRAINT user_roles_user_id_fkey_profiles 
+FOREIGN KEY (user_id) REFERENCES public.profiles(user_id) ON DELETE CASCADE;
