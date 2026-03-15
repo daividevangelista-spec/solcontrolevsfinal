@@ -9,6 +9,7 @@ import AppLayout from "@/components/AppLayout";
 
 import LoginPage from "@/pages/LoginPage";
 import Index from "@/pages/Index";
+import { SolarBackground } from "@/components/SolarBackground";
 
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminClients from "@/pages/admin/AdminClients";
@@ -40,6 +41,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light" storageKey="solcontrole-theme" attribute="class">
       <TooltipProvider>
+        <SolarBackground />
         <Toaster />
         <Sonner />
         <BrowserRouter>

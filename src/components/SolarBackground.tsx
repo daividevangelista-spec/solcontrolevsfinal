@@ -2,38 +2,41 @@ import React from 'react';
 
 export const SolarBackground: React.FC = () => {
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden bg-background pointer-events-none transition-colors duration-700">
+    <div className="fixed inset-0 -z-10 overflow-hidden bg-background pointer-events-none transition-colors duration-1000">
       {/* Dynamic Energy Mesh */}
-      <div className="absolute inset-0 bg-mesh opacity-60" />
+      <div className="absolute inset-0 bg-mesh opacity-40 dark:opacity-60" />
 
-      {/* Main Solar Flare (Top Right) */}
+      {/* Diagonal Solar Grid (Mockup Style) */}
+      <div className="absolute inset-0 bg-solar-grid opacity-20 dark:opacity-30" />
+
+      {/* Extreme Solar Flare (Top Right) */}
       <div 
-        className="absolute -top-[20%] -right-[10%] w-[80%] h-[80%] rounded-full bg-primary/20 blur-[120px] animate-pulse" 
-        style={{ animationDuration: '8s' }}
+        className="absolute -top-[30%] -right-[15%] w-[100%] h-[100%] rounded-full bg-primary/20 blur-[150px] animate-pulse" 
+        style={{ animationDuration: '6s' }}
       />
       
-      {/* Secondary Orbital Light */}
+      {/* Orbital Energy Core */}
       <div 
-        className="absolute top-[20%] left-[10%] w-[40%] h-[40%] rounded-full bg-amber-500/10 blur-[100px] animate-orbit" 
+        className="absolute top-[10%] left-[5%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[120px] animate-orbit opacity-50" 
       />
       
-      {/* Deep Warm Glow (Bottom Left) */}
+      {/* Deep Atmosphere Glow */}
       <div 
-        className="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-orange-600/10 blur-[130px] animate-float" 
-        style={{ animationDuration: '15s' }}
+        className="absolute -bottom-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-orange-600/15 blur-[140px] animate-float opacity-40" 
+        style={{ animationDuration: '20s' }}
       />
 
-      {/* Energy Particles Grid */}
+      {/* Particle Overlay */}
       <div 
-        className="absolute inset-0 opacity-[0.05] dark:opacity-[0.08]" 
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" 
         style={{ 
           backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--primary)) 1px, transparent 0)`,
-          backgroundSize: '48px 48px' 
+          backgroundSize: '32px 32px' 
         }}
       />
 
-      {/* Overlay Vignette */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/20" />
+      {/* Dark Vignette for Premium Look */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-background/40 via-transparent to-transparent" />
     </div>
   );
 };

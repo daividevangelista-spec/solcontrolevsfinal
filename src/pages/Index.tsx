@@ -1,25 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Sun, ArrowRight, Zap, ShieldCheck, BarChart3, MessageSquare } from "lucide-react";
+import { 
+  Sun, ArrowRight, Zap, ShieldCheck, BarChart3, MessageSquare, 
+  Leaf, Globe, Wind, CheckCircle2, ChevronRight, TrendingUp
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { SolarBackground } from "@/components/SolarBackground";
 
 export default function Index() {
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-primary/20">
+    <div className="min-h-screen text-foreground selection:bg-primary/30 relative">
+      <div className="absolute inset-0 bg-mesh opacity-10 pointer-events-none" />
+      
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
-        <div className="container h-20 flex items-center justify-between">
+      <nav className="fixed top-0 w-full z-50 border-b border-white/10 bg-background/20 backdrop-blur-2xl">
+        <div className="container h-16 flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl solar-gradient flex items-center justify-center shadow-lg shadow-primary/20">
-              <Sun className="w-6 h-6 text-white" />
+            <div className="w-9 h-9 rounded-xl premium-gradient flex items-center justify-center shadow-lg shadow-primary/20">
+              <Sun className="w-5 h-5 text-white animate-spin-slow" />
             </div>
-            <span className="font-display font-black text-2xl tracking-tighter">SolControle</span>
+            <span className="font-display font-black text-xl tracking-tighter">SolControle</span>
           </div>
           
           <div className="flex items-center gap-4">
-            <Button variant="ghost" className="font-bold text-slate-600" asChild>
-              <Link to="/login">Entrar</Link>
-            </Button>
-            <Button className="solar-gradient text-accent font-black rounded-xl shadow-xl shadow-primary/20 px-8" asChild>
+            <Link to="/login" className="text-xs font-black uppercase tracking-widest hover:text-primary transition-colors hidden sm:block px-4">Entrar</Link>
+            <Button className="solar-gradient text-white font-black rounded-xl shadow-xl shadow-primary/20 px-6 h-10 uppercase text-[10px] tracking-widest" asChild>
               <Link to="/login">Começar Agora</Link>
             </Button>
           </div>
@@ -27,68 +32,223 @@ export default function Index() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-32 overflow-hidden">
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl opacity-50" />
-        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-warning/5 rounded-full blur-3xl opacity-50" />
-        
-        <div className="container relative z-10 text-center space-y-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-[10px] uppercase tracking-widest animate-fade-in">
-            <Zap className="w-3.5 h-3.5" /> A revolução na gestão de energia solar
-          </div>
+      <section className="relative pt-32 pb-20 overflow-hidden">
+        <div className="container px-6 relative z-10 text-center">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-[10px] uppercase tracking-[0.2em] mb-8"
+          >
+            <Zap className="w-4 h-4 fill-primary/20" /> PLATINUM V16: O FUTURO É SOLAR
+          </motion.div>
           
-          <h1 className="text-6xl md:text-8xl font-display font-black tracking-tighter leading-none max-w-5xl mx-auto">
-            O controle total da sua <span className="solar-gradient-text">Energia Solar</span> num só lugar.
-          </h1>
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl md:text-8xl font-display font-black tracking-tighter leading-[0.9] max-w-5xl mx-auto mb-10"
+          >
+            Sua usina, seu controle, <br />
+            <span className="solar-gradient-text">Transparência Total.</span>
+          </motion.h1>
           
-          <p className="text-xl text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
-            Monitore sua geração, gerencie faturas, automatize notificações e maximize sua economia com a plataforma SaaS mais moderna do mercado brasileiro.
-          </p>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed mb-12"
+          >
+            Monitore a geração, gerencie faturas e automatize o contato com clientes na plataforma SaaS solar mais avançada do Brasil.
+          </motion.p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
-            <Button size="lg" className="h-16 px-12 solar-gradient text-accent font-black text-xl rounded-2xl shadow-2xl shadow-primary/30 hover:scale-105 transition-transform" asChild>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-6"
+          >
+            <Button size="lg" className="h-16 px-10 solar-gradient text-white font-black text-lg rounded-2xl shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all group" asChild>
               <Link to="/login">
-                Acessar Plataforma <ArrowRight className="ml-3 w-6 h-6" />
+                Acessar Platinum <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform" />
               </Link>
             </Button>
-            <p className="text-slate-400 font-bold">Trusted by 500+ solar plants</p>
+            <div className="flex -space-x-3">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-muted overflow-hidden">
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 10}`} alt="User" />
+                </div>
+              ))}
+              <div className="w-10 h-10 rounded-full border-2 border-background bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary backdrop-blur-md">
+                +1.2k
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Environment & Tech Section */}
+      <section className="py-24 relative">
+        <div className="container px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: "Ecossistema", desc: "Software que respeita o meio ambiente.", icon: Leaf, color: "text-emerald-500" },
+              { title: "Escalável", desc: "Pronto para centrais de qualquer tamanho.", icon: Globe, color: "text-blue-500" },
+              { title: "Autônomo", desc: "Notificações inteligentes via WhatsApp.", icon: MessageSquare, color: "text-amber-500" },
+              { title: "Puro Solar", desc: "Design focado na energia renovável.", icon: Wind, color: "text-sky-500" },
+            ].map((feature, idx) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="glass-card border-white/10 p-8 rounded-3xl solar-border-glow group"
+              >
+                <div className={`w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:solar-gradient group-hover:text-white transition-all duration-500 shadow-inner`}>
+                  <feature.icon className="w-7 h-7" />
+                </div>
+                <h3 className="text-xl font-black mb-3">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground font-medium leading-relaxed">{feature.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="py-24 bg-slate-50">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-4xl bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <BarChart3 className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-black mb-4">Dashboard Preditivo</h3>
-              <p className="text-slate-500 font-medium leading-relaxed">Visualize sua economia real vs. custo da concessionária com transparência absoluta.</p>
+      {/* Main Feature Preview */}
+      <section className="py-20 bg-primary/5 border-y border-primary/10">
+        <div className="container px-6 flex flex-col lg:flex-row items-center gap-16">
+          <div className="flex-1 space-y-8">
+            <h2 className="text-4xl md:text-5xl font-display font-black tracking-tighter leading-tight">
+              Uma experiência <br />
+              <span className="solar-gradient-text tracking-tighter">Radicalmente Diferente.</span>
+            </h2>
+            <div className="space-y-4">
+              {[
+                "Cálculo automático de injeção e economia",
+                "Geração massiva de faturas personalizadas",
+                "Integração direta com o WhatsApp para faturamento",
+                "Filtros avançados e exportação de relatórios Platinum"
+              ].map(item => (
+                <div key={item} className="flex items-center gap-4 group">
+                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 group-hover:bg-primary transition-colors">
+                    <CheckCircle2 className="w-4 h-4 text-primary group-hover:text-white transition-colors" />
+                  </div>
+                  <span className="font-bold text-muted-foreground group-hover:text-foreground transition-colors">{item}</span>
+                </div>
+              ))}
             </div>
-
-            <div className="p-8 rounded-4xl bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
-              <div className="w-14 h-14 rounded-2xl bg-success/10 text-success flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <ShieldCheck className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-black mb-4">Gestão de Pagamentos</h3>
-              <p className="text-slate-500 font-medium leading-relaxed">PIX Copy & Paste, QR Codes dinâmicos e confirmação automática de comprovantes.</p>
-            </div>
-
-            <div className="p-8 rounded-4xl bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
-              <div className="w-14 h-14 rounded-2xl bg-warning/10 text-warning flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <MessageSquare className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-black mb-4">WhatsApp Automação</h3>
-              <p className="text-slate-500 font-medium leading-relaxed">Envio massivo de faturas e lembretes de vencimento integrados diretamente com a API oficial.</p>
-            </div>
+            <Button size="lg" variant="outline" className="h-14 px-8 rounded-xl border-primary/20 font-black uppercase text-xs tracking-widest hover:bg-primary/5 group" asChild>
+              <Link to="/login">
+                Descobrir Recursos <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </Button>
           </div>
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="flex-1 glass-card border-white/20 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(245,158,11,0.2)] overflow-hidden p-1 relative group"
+          >
+            <div className="aspect-[16/10] bg-zinc-950 rounded-[2.3rem] overflow-hidden relative border border-white/5">
+                {/* Background Premium Mockup Image */}
+                <img 
+                  src="/solar_dashboard_mockup_v16_1773602413064.png" 
+                  alt="SolControle Interface" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-[3000ms]"
+                />
+                
+                <div className="absolute inset-0 bg-gradient-to-br from-zinc-950 via-transparent to-primary/5 pointer-events-none" />
+
+                {/* Browser UI Chrome */}
+                <div className="absolute top-0 left-0 right-0 h-10 bg-black/40 backdrop-blur-md border-b border-white/5 flex items-center px-6 gap-2 z-20">
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/30" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500/30" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/30" />
+                  </div>
+                  <div className="ml-4 h-5 w-48 bg-white/5 rounded-full border border-white/5 flex items-center px-3">
+                    <div className="w-2 h-2 rounded-full bg-primary/40 mr-2" />
+                    <div className="h-2 w-24 bg-white/10 rounded-full" />
+                  </div>
+                </div>
+                
+                {/* Floating Dynamic Cards */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {/* Floating Stat 1 */}
+                  <motion.div 
+                    animate={{ y: [0, -15, 0], x: [0, 5, 0] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute top-[25%] right-[10%] w-32 h-20 glass-card bg-black/60 border-primary/20 p-3 rounded-2xl z-30 shadow-2xl"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                        <TrendingUp className="w-3 h-3 text-emerald-500" />
+                      </div>
+                      <span className="text-[8px] font-black uppercase text-emerald-500">+12%</span>
+                    </div>
+                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: "80%" }}
+                        transition={{ duration: 2, delay: 1 }}
+                        className="h-full solar-gradient"
+                      />
+                    </div>
+                  </motion.div>
+
+                  <motion.div 
+                    animate={{ y: [0, 15, 0], x: [0, -5, 0] }}
+                    transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                    className="absolute bottom-[20%] left-[10%] w-44 h-28 glass-card bg-black/60 border-primary/10 p-4 rounded-3xl z-30 shadow-2xl flex flex-col justify-between"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <span className="text-[7px] font-black uppercase tracking-widest text-muted-foreground/60 block">Status Geral</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black text-foreground">750 <span className="text-primary/60">kWh</span></span>
+                        </div>
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Zap className="w-4 h-4 text-primary animate-pulse" />
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-1.5 h-8 items-end">
+                      {[0.4, 0.7, 0.5, 0.9, 0.6, 0.8, 0.4, 0.5].map((h, i) => (
+                        <motion.div 
+                          key={i} 
+                          initial={{ height: 0 }}
+                          animate={{ height: `${h * 100}%` }}
+                          transition={{ duration: 1, delay: i * 0.1 }}
+                          className="flex-1 bg-gradient-to-t from-primary/10 to-primary/40 rounded-t-[2px]" 
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                  {/* Central Glow */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
+                </div>
+
+                {/* Decorative Sun Flare */}
+                <Sun className="w-48 h-48 text-primary/10 absolute -bottom-10 -right-10 blur-3xl animate-pulse" />
+                <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent pointer-events-none" />
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-32 text-center">
+        <div className="container px-6">
+          <h2 className="text-5xl md:text-7xl font-display font-black tracking-tighter mb-10">
+            Pronto para <span className="solar-gradient-text">Elevar</span> seu negócio?
+          </h2>
+          <Button size="lg" className="h-20 px-16 solar-gradient text-white font-black text-2xl rounded-[2rem] shadow-[0_0_50px_rgba(245,158,11,0.4)] hover:scale-110 active:scale-95 transition-all" asChild>
+            <Link to="/login">INICIAR AGORA</Link>
+          </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-20 border-t border-slate-100">
-        <div className="container flex flex-col md:flex-row justify-between items-center gap-8">
+      <footer className="py-12 border-t border-white/5 bg-background/20 backdrop-blur-md">
+        <div className="container px-6 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl solar-gradient flex items-center justify-center">
               <Sun className="w-5 h-5 text-white" />
@@ -96,8 +256,8 @@ export default function Index() {
             <span className="font-display font-black text-xl tracking-tighter">SolControle</span>
           </div>
           
-          <div className="text-slate-400 font-bold text-sm">
-            © {new Date().getFullYear()} SolControle Brasil. Todos os direitos reservados.
+          <div className="text-muted-foreground/60 font-bold text-[10px] uppercase tracking-[0.2em]">
+            © {new Date().getFullYear()} SolControle Platinum Edition. Feito para o Brasil.
           </div>
         </div>
       </footer>

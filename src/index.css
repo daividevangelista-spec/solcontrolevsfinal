@@ -143,7 +143,12 @@
   }
 
   .solar-border-glow {
-    @apply relative overflow-hidden after:absolute after:inset-0 after:p-[1px] after:rounded-[inherit] after:bg-gradient-to-br after:from-primary/50 after:to-transparent after:-z-10 bg-clip-padding;
+    @apply relative overflow-hidden border border-primary/20 shadow-[0_0_15px_-3px_rgba(245,158,11,0.3)];
+    background-clip: padding-box;
+  }
+
+  .solar-border-neon {
+    @apply border border-primary/40 shadow-[0_0_8px_rgba(245,158,11,0.2)] focus:border-primary focus:shadow-[0_0_12px_rgba(245,158,11,0.4)] transition-all;
   }
 
   .saas-button {

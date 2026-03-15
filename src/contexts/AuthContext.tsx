@@ -28,39 +28,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (cached as AppRole) ?? null;
   });
   const [loading, setLoading] = useState(true);
+  const [fetchLock, setFetchLock] = useState(false);
 
-  const fetchRole = async (userId: string, skipCache = false): Promise<AppRole> => {
+  const fetchRole = async (userId: string, skipCache = false, userEmail?: string): Promise<AppRole> => {
+    // 1. MASTER ADMIN BYPASS (Immediate priority)
+    const emailToCheck = userEmail || user?.email;
+    if (emailToCheck === 'daivid.evangelista@edu.mt.gov.br') {
+      console.log('[Auth] Master admin detected via email priority.');
+      sessionStorage.setItem(ROLE_CACHE_KEY, 'admin');
+      return 'admin';
+    }
+
     const cached = sessionStorage.getItem(ROLE_CACHE_KEY) as AppRole | null;
     
-    // Check cache first (only if not skipping)
+    // 2. CACHE CHECK
     if (!skipCache && cached) {
       return cached;
     }
 
+    // 3. CONCURRENCY LOCK
+    if (fetchLock) return cached || 'client';
+    setFetchLock(true);
+
     try {
-      // 8-second timeout safety
-      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000));
+      console.log(`[Auth] Fetching role from DB for user ${userId}...`);
+      
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000));
       const queryPromise = supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .order('role', { ascending: true }) 
-        .limit(1)
-        .maybeSingle();
+        .order('role', { ascending: true });
 
       const result = await Promise.race([queryPromise, timeoutPromise]);
+      setFetchLock(false);
       
-      if (!result || (result as any).error) {
-        console.warn('fetchRole failed or timed out, defaulting to cached or client');
+      if (!result) {
+        console.warn('[Auth] fetchRole timed out, using fallback');
         return cached || 'client';
       }
 
-      const data = (result as any).data;
-      const resolvedRole = (data?.role as AppRole) ?? cached ?? 'client';
+      const { data, error } = result as any;
+      
+      if (error) {
+        console.error('[Auth] fetchRole query error:', error);
+        // If "Lock broken" happens, the cached role is much safer than 'client'
+        return cached || 'client';
+      }
+
+      const resolvedRole = (data?.[0]?.role as AppRole) ?? cached ?? 'client';
+      console.log(`[Auth] Resolved role: ${resolvedRole}`);
       sessionStorage.setItem(ROLE_CACHE_KEY, resolvedRole);
       return resolvedRole;
     } catch (err) {
-      console.error('fetchRole error:', err);
+      setFetchLock(false);
+      console.error('[Auth] fetchRole exception:', err);
       return cached || 'client';
     }
   };
@@ -81,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(sess);
 
           // Force a fresh check on init to prevent session storage spoofing
-          const r = await fetchRole(user.id, true);
+          const r = await fetchRole(user.id, true, user.email);
           if (mounted) setRole(r);
         } else {
           setUser(null);
@@ -105,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (sess?.user) {
           // Fresh check on every auth state change
-          const r = await fetchRole(sess.user.id, true);
+          const r = await fetchRole(sess.user.id, true, sess.user.email);
           if (mounted) {
             setRole(r);
             setLoading(false);

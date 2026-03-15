@@ -159,13 +159,34 @@ export default function AdminDashboard() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-        <RefinedStat label="Clientes" value={metrics.totalClients} icon={Users} color="text-info" delay={0} />
-        <RefinedStat label="Unidades" value={metrics.totalUnits} icon={Zap} color="text-warning" delay={1} />
-        <RefinedStat label="Total Faturas" value={metrics.totalBills} icon={FileText} color="text-foreground" delay={2} />
-        <RefinedStat label="Pendentes" value={metrics.pendingBills} icon={Clock} color="text-warning" delay={3} />
-        <RefinedStat label="Pagas" value={metrics.paidBills} icon={CheckCircle} color="text-success" delay={4} />
-        <RefinedStat label="Vencidas" value={metrics.overdueBills} icon={AlertTriangle} color="text-destructive" delay={5} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {[
+          { label: "Clientes", value: metrics.totalClients, icon: Users, color: "text-info" },
+          { label: "Unidades", value: metrics.totalUnits, icon: Zap, color: "text-warning" },
+          { label: "Total Faturas", value: metrics.totalBills, icon: FileText, color: "text-foreground" },
+          { label: "Pendentes", value: metrics.pendingBills, icon: Clock, color: "text-warning" },
+          { label: "Pagas", value: metrics.paidBills, icon: CheckCircle, color: "text-success" },
+          { label: "Vencidas", value: metrics.overdueBills, icon: AlertTriangle, color: "text-destructive" },
+        ].map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+          >
+            <Card className="glass-card border-white/10 dark:border-white/5 hover:border-primary/40 transition-all p-4 solar-border-glow">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-muted/30">
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                </div>
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">{stat.label}</p>
+                  <p className="text-lg font-display font-black">{stat.value}</p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
       <div>
@@ -199,32 +220,32 @@ export default function AdminDashboard() {
         <h2 className="text-lg font-display font-bold text-foreground mb-3">Gráficos de Desempenho (Últimos 6 meses)</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Chart 1: Solar Injected */}
-          <Card className="saas-card overflow-hidden">
+          <Card className="glass-card border-white/10 dark:border-white/5 hover:border-primary/40 transition-all p-0 overflow-hidden solar-border-glow">
             <CardHeader className="pb-0 px-6 pt-6">
               <CardTitle className="font-display text-xl font-black flex items-center gap-2">
                 <div className="p-2 rounded-xl bg-primary/10">
                   <Zap className="w-5 h-5 text-primary" />
                 </div>
-                Energia Solar Injetada Mensal
+                Energia Injetada
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="h-[300px] w-full mt-4">
+              <div className="h-[280px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorInjected" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 800, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fontWeight: 800, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                     <Tooltip
-                      contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '16px', boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: '800' }}
+                      contentStyle={{ background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(10px)', color: '#fff' }}
                     />
-                    <Area type="monotone" dataKey="injectedEnergy" name="Solar Injetada (kWh)" stroke="#f59e0b" strokeWidth={3} fill="url(#colorInjected)" />
+                    <Area type="monotone" dataKey="injectedEnergy" name="Solar Injetada (kWh)" stroke="hsl(var(--primary))" strokeWidth={4} fill="url(#colorInjected)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -232,33 +253,33 @@ export default function AdminDashboard() {
           </Card>
 
           {/* Chart 2: Solar Revenue */}
-          <Card className="saas-card overflow-hidden">
+          <Card className="glass-card border-white/10 dark:border-white/5 hover:border-primary/40 transition-all p-0 overflow-hidden solar-border-glow">
             <CardHeader className="pb-0 px-6 pt-6">
               <CardTitle className="font-display text-xl font-black flex items-center gap-2">
                 <div className="p-2 rounded-xl bg-success/10">
                   <DollarSign className="w-5 h-5 text-success" />
                 </div>
-                Receita Solar Mensal
+                Receita Estimada
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="h-[300px] w-full mt-4">
+              <div className="h-[280px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 800, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fontWeight: 800, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                     <Tooltip
-                      contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '16px', boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: '800' }}
+                      contentStyle={{ background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(10px)', color: '#fff' }}
                       formatter={(value: number) => [`R$ ${value.toFixed(2)}`, 'Receita']}
                     />
-                    <Bar dataKey="solarRevenue" name="Receita" fill="url(#colorRev)" radius={[8, 8, 0, 0]} barSize={32} />
+                    <Bar dataKey="solarRevenue" name="Receita" fill="url(#colorRev)" radius={[6, 6, 0, 0]} barSize={24} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

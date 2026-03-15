@@ -61,7 +61,6 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden">
-      <SolarBackground />
       
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}

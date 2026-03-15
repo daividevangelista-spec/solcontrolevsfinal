@@ -5,8 +5,9 @@ import {
   FileText, CreditCard, Shield, History, Database, MessageSquare, ChevronDown
 } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,7 @@ const adminGroups = [
   {
     label: 'Geral',
     links: [
+      { to: '/', label: 'Visão Geral', icon: Sun },
       { to: '/admin', label: 'Início', icon: LayoutDashboard },
       { to: '/admin/bills', label: 'Faturas', icon: FileText },
       { to: '/admin/payments', label: 'Pagamento', icon: CreditCard },
@@ -42,6 +44,7 @@ const adminGroups = [
 ];
 
 const clientLinks = [
+  { to: '/', label: 'Visão Geral', icon: Sun },
   { to: '/dashboard', label: 'Início', icon: LayoutDashboard },
   { to: '/dashboard/bills', label: 'Faturas', icon: FileText },
   { to: '/dashboard/settings', label: 'Perfil', icon: Settings },
@@ -51,176 +54,191 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { role, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isStaff = role === 'admin' || role === 'moderator';
+  const links = isStaff ? adminGroups.flatMap(g => g.links) : clientLinks;
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-700">
-      {/* Header - Ultra Compact Glassmorphic */}
-      <header className="sticky top-0 z-50 border-b border-border/20 bg-background/40 backdrop-blur-2xl">
-        <div className="container flex items-center justify-between h-12 md:h-14 lg:h-14">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-all active:scale-95 shrink-0">
-            <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg premium-gradient flex items-center justify-center shadow-lg shadow-primary/20">
-              <Sun className="w-4 h-4 md:w-5 md:h-5 text-white animate-pulse" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-display font-black text-sm md:text-lg tracking-tight leading-none">SolControle</span>
-              <span className="hidden md:block text-[7px] font-bold uppercase tracking-[0.2em] text-primary/80 leading-none mt-0.5">Gestão Solar</span>
-            </div>
-          </Link>
+    <div className="min-h-screen flex bg-transparent text-foreground selection:bg-primary/30 selection:text-foreground">
+      {/* Premium Sidebar (Left) */}
+      <aside className="hidden md:flex flex-col w-64 h-screen sticky top-0 bg-background/40 backdrop-blur-3xl border-r border-white/10 p-5 z-50">
+        <Link to={isStaff ? "/admin" : "/dashboard"} className="flex items-center gap-3 px-3 py-6 mb-4 border-b border-white/5 hover:bg-white/5 transition-colors rounded-t-2xl group/logo">
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.2)] group-hover/logo:scale-110 transition-transform">
+            <Sun className="w-6 h-6 text-primary animate-pulse" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-display font-black tracking-tighter text-foreground">SOLCONTROLE</span>
+            <span className="text-[9px] font-black tracking-widest text-primary/60 uppercase">Platinum V16</span>
+          </div>
+        </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
-            {isStaff ? (
-              <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-lg border border-border/20">
-                {adminGroups.map((group, idx) => (
-                  <DropdownMenu key={idx}>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={`h-8 px-2 rounded-md text-[10px] uppercase tracking-wider font-black transition-all gap-1 ${
-                          group.links.some(l => location.pathname === l.to)
-                            ? 'bg-card text-primary shadow-sm ring-1 ring-border/30'
-                            : 'text-muted-foreground hover:bg-muted/80'
-                        }`}
-                      >
-                        {group.label}
-                        <ChevronDown className="w-2.5 h-2.5 opacity-50" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-[180px] rounded-xl border-border/50 shadow-2xl p-1 backdrop-blur-lg">
-                      {group.links
-                        .filter(link => role === 'admin' || link.to !== '/admin/users')
-                        .map(link => (
-                          <DropdownMenuItem key={link.to} asChild className="rounded-lg">
-                            <Link 
-                              to={link.to} 
-                              className={`flex items-center gap-3 p-2 font-bold text-[11px] ${location.pathname === link.to ? 'text-primary bg-primary/5' : 'text-muted-foreground/80 hover:text-foreground'}`}
-                            >
-                              <link.icon className={`w-3.5 h-3.5 ${location.pathname === link.to ? 'text-primary' : 'opacity-50'}`} />
-                              {link.label}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
-                {clientLinks.map(link => (
-                  <Button
-                    key={link.to}
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className={`h-8 px-3 rounded-lg text-[10px] font-black uppercase transition-all duration-300 ${
-                      location.pathname === link.to 
-                        ? 'bg-card text-primary shadow-sm ring-1 ring-border/20' 
-                        : 'text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    <Link to={link.to}>
-                      <link.icon className="w-3.5 h-3.5 mr-2" />
-                      {link.label}
-                    </Link>
-                  </Button>
-                ))}
-              </div>
-            )}
-
-            <div className="flex items-center gap-1 border-l border-border/40 ml-1 pl-1.5">
-              <ThemeToggle />
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={signOut} 
-                className="rounded-xl h-9 w-9 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all border border-border/20 hover:border-destructive/30 saas-button"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
+        <nav className="flex-1 space-y-6 overflow-y-auto pr-1 hide-scrollbar">
+          {!role ? (
+            <div className="space-y-4 px-3">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-9 w-full bg-white/5 rounded-lg animate-pulse" />
+              ))}
             </div>
-          </nav>
-
-          {/* Mobile hamburger */}
-          <Button variant="ghost" size="icon" className="md:hidden h-9 w-9" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
-        </div>
-
-        {/* Mobile menu - Condensada */}
-        {menuOpen && (
-          <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-2xl p-4 pb-8 space-y-4 animate-in fade-in slide-in-from-top-4 duration-300 overflow-y-auto max-h-[85vh]">
-            <div className="flex items-center justify-between px-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Navegação</span>
-              <ThemeToggle />
-            </div>
-            
-            <div className="grid grid-cols-1 gap-4">
-              {isStaff ? adminGroups.map(group => (
-                <div key={group.label} className="space-y-1">
-                  <h4 className="px-3 text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">{group.label}</h4>
-                  <div className="grid gap-0.5">
-                    {group.links
-                      .filter(link => role === 'admin' || link.to !== '/admin/users')
-                      .map(link => (
-                        <Button
-                          key={link.to}
-                          asChild
-                          variant="ghost"
-                          className={`w-full justify-start h-11 px-3 rounded-lg transition-all ${
-                            location.pathname === link.to 
-                              ? 'bg-primary/5 text-primary border border-primary/20 font-black' 
-                              : 'text-muted-foreground'
-                          }`}
-                        >
-                          <Link to={link.to} onClick={() => setMenuOpen(false)}>
-                            <link.icon className={`w-4 h-4 mr-4 ${location.pathname === link.to ? 'text-primary' : 'opacity-40'}`} />
-                            <span className="text-[11px] font-black uppercase tracking-tight">{link.label}</span>
-                          </Link>
-                        </Button>
-                      ))}
-                  </div>
-                </div>
-              )) : (
-                <div className="grid gap-1">
-                  {clientLinks.map(link => (
+          ) : isStaff ? (
+            adminGroups.map((group) => (
+              <div key={group.label} className="space-y-1">
+                <h2 className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 px-3 mb-2">{group.label}</h2>
+                {group.links.map((link) => {
+                  const isActive = location.pathname === link.to;
+                  return (
                     <Button
                       key={link.to}
-                      asChild
                       variant="ghost"
-                      className={`w-full justify-start h-12 px-4 rounded-xl transition-all ${
-                        location.pathname === link.to 
-                          ? 'bg-primary/5 text-primary border border-primary/20 font-black' 
-                          : 'text-muted-foreground'
+                      onClick={() => navigate(link.to)}
+                      className={`w-full justify-start h-9 px-3 rounded-lg transition-all duration-300 relative group ${
+                        isActive 
+                          ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_-5px_rgba(245,158,11,0.3)]' 
+                          : 'text-muted-foreground/60 hover:text-foreground hover:bg-white/5'
                       }`}
                     >
-                      <Link to={link.to} onClick={() => setMenuOpen(false)}>
-                        <link.icon className="w-5 h-5 mr-4" />
-                        <span className="text-xs font-black uppercase tracking-wide">{link.label}</span>
-                      </Link>
+                      {isActive && (
+                        <motion.div 
+                          layoutId="activeTab"
+                          className="absolute left-0 w-1 h-4 bg-primary rounded-full shadow-[0_0_10px_rgb(245,158,11)]"
+                        />
+                      )}
+                      <link.icon className={`w-4 h-4 mr-3 transition-colors ${isActive ? 'text-primary' : 'group-hover:text-primary/60'}`} />
+                      <span className="text-[10px] font-black uppercase tracking-wider">{link.label}</span>
                     </Button>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            <div className="pt-4 border-t border-border/40">
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start h-11 px-3 rounded-xl text-destructive hover:bg-destructive/10 transition-colors font-black text-[11px] uppercase" 
-                onClick={signOut}
-              >
-                <LogOut className="w-4 h-4 mr-4" />
-                Sair da Conta
-              </Button>
-            </div>
-          </div>
-        )}
-      </header>
+                  );
+                })}
+              </div>
+            ))
+          ) : (
+            clientLinks.map((link) => {
+              const isActive = location.pathname === link.to;
+              return (
+                <Button
+                  key={link.to}
+                  variant="ghost"
+                  onClick={() => navigate(link.to)}
+                  className={`w-full justify-start h-10 px-3 rounded-lg transition-all duration-300 relative group ${
+                    isActive 
+                      ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_-5px_rgba(245,158,11,0.3)]' 
+                      : 'text-muted-foreground/60 hover:text-foreground hover:bg-white/5'
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div 
+                      layoutId="activeTab"
+                      className="absolute left-0 w-1 h-5 bg-primary rounded-full shadow-[0_0_10px_rgb(245,158,11)]"
+                    />
+                  )}
+                  <link.icon className={`w-4 h-4 mr-3 transition-colors ${isActive ? 'text-primary' : 'group-hover:text-primary/60'}`} />
+                  <span className="text-[10px] font-black uppercase tracking-wider">{link.label}</span>
+                </Button>
+              );
+            })
+          )}
+        </nav>
 
-      {/* Content - Compact Layout */}
-      <main className="container py-4 md:py-6">{children}</main>
+        <div className="pt-4 border-t border-white/5 space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40">Preferências</span>
+            <ThemeToggle />
+          </div>
+          <Button 
+            variant="ghost" 
+            onClick={signOut}
+            className="w-full justify-start h-10 px-3 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-all border border-transparent hover:border-destructive/20"
+          >
+            <LogOut className="w-4 h-4 mr-3" />
+            <span className="text-[10px] font-black uppercase tracking-wider">Desconectar</span>
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
+        <header className="md:hidden sticky top-0 z-50 h-16 bg-background/40 backdrop-blur-3xl border-b border-white/10 flex items-center justify-between px-6">
+          <Link to={isStaff ? "/admin" : "/dashboard"} className="flex items-center gap-3 active:scale-95 transition-transform">
+            <div className="w-8 h-8 rounded-xl premium-gradient flex items-center justify-center">
+              <Sun className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-display font-black text-lg tracking-tighter">SolControle</span>
+          </Link>
+         <Button variant="ghost" size="icon" onClick={() => setMenuOpen(!menuOpen)} className="rounded-xl bg-white/5">
+            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </Button>
+        </header>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-3xl md:hidden p-8 flex flex-col"
+            >
+              <div className="flex justify-between items-center mb-12">
+                <Link to={isStaff ? "/admin" : "/dashboard"} className="font-display font-black text-2xl tracking-tighter text-primary" onClick={() => setMenuOpen(false)}>SolControle</Link>
+              <Button variant="ghost" size="icon" onClick={() => setMenuOpen(false)}>
+                  <X className="w-8 h-8" />
+                </Button>
+              </div>
+              <nav className="flex-1 space-y-8 overflow-y-auto">
+                {isStaff ? (
+                  adminGroups.map(group => (
+                    <div key={group.label} className="space-y-3">
+                      <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/50 px-2">{group.label}</h2>
+                      {group.links.map(link => {
+                        const isActive = location.pathname === link.to;
+                        return (
+                          <Button
+                            key={link.to}
+                            variant="ghost"
+                            className={`w-full justify-start h-14 px-4 rounded-xl text-lg font-black uppercase tracking-tighter ${
+                              isActive ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground'
+                            }`}
+                            onClick={() => { navigate(link.to); setMenuOpen(false); }}
+                          >
+                            <link.icon className="w-6 h-6 mr-6" />
+                            {link.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  ))
+                ) : (
+                  clientLinks.map(link => {
+                    const isActive = location.pathname === link.to;
+                    return (
+                      <Button
+                        key={link.to}
+                        variant="ghost"
+                        className={`w-full justify-start h-16 px-6 rounded-2xl text-xl font-black uppercase tracking-tighter ${
+                          isActive ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground'
+                        }`}
+                        onClick={() => { navigate(link.to); setMenuOpen(false); }}
+                      >
+                        <link.icon className="w-7 h-7 mr-6" />
+                        {link.label}
+                      </Button>
+                    );
+                  })
+                )}
+              </nav>
+              <div className="pt-8 border-t border-white/10 flex items-center justify-between gap-4">
+                <Button onClick={signOut} variant="destructive" className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-xs">Sair da Conta</Button>
+                <div className="p-2 border border-white/10 rounded-2xl"><ThemeToggle /></div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <main className="flex-1 p-4 md:p-8 lg:p-10 relative overflow-x-hidden">
+          <div className="max-w-[1600px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
