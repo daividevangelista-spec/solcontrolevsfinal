@@ -8,15 +8,19 @@ const SOLCONTROLE_TOKEN = process.env.SOLCONTROLE_TOKEN || "solcontrole_secret_t
 
 app.use(express.json())
 
-// CORS Middleware - Hardened
+// CORS Middleware - Definitive Fix
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  // Allow any origin for now to solve the issue definitively
-  res.setHeader("Access-Control-Allow-Origin", origin || "*");
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+  
   res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-api-key");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   // Log incoming request info for auditing
   if (req.method !== "OPTIONS") {
