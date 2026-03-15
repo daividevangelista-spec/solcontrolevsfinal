@@ -1,13 +1,15 @@
 -- Migration: Roles & Moderation Hardening
--- Phase 15.3: Adding moderator role, ownership tracking, and fixing persistent schema errors
+-- IMPORTANT: Run Part 1 first, then run Part 2.
 
--- 1. Add 'moderator' to the enum (using transactional safety check)
-DO $$ 
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type t JOIN pg_enum e ON t.oid = e.enumtypid WHERE t.typname = 'app_role' AND e.enumlabel = 'moderator') THEN
-    ALTER TYPE public.app_role ADD VALUE 'moderator';
-  END IF;
-END $$;
+-- ==========================================
+-- PART 1: Run this block alone first
+-- ==========================================
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'moderator';
+-- ==========================================
+
+-- ==========================================
+-- PART 2: Run the rest of the script after Part 1 completes
+-- ==========================================
 
 -- 2. Fix user_roles schema (Add missing columns that caused 400 errors)
 ALTER TABLE public.user_roles ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
