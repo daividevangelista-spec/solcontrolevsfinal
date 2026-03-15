@@ -20,7 +20,7 @@ const adminGroups = [
     links: [
       { to: '/admin', label: 'Início', icon: LayoutDashboard },
       { to: '/admin/bills', label: 'Faturas', icon: FileText },
-      { to: '/admin/payments', label: 'Pgto', icon: CreditCard },
+      { to: '/admin/payments', label: 'Pagamento', icon: CreditCard },
     ]
   },
   {

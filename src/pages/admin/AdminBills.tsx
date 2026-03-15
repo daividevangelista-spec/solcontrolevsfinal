@@ -164,10 +164,8 @@ export default function AdminBills() {
     const energisa = parseFloat(form.energisa_bill_value || '0');
     const concessionaria = parseFloat(form.concessionaria_value || '0');
     const solar = calcSolar(kwh, selectedUnit, pricePerKwh);
-    // Total depends on billing mode
-    const total = form.billing_mode === 'combined'
-      ? solar + energisa
-      : solar;
+    // Total always represents the full cost (Solar + Energisa/Taxas)
+    const total = solar + energisa;
 
     let energisaUrl = editingBill?.concessionaria_bill_url || null;
 
@@ -674,6 +672,19 @@ export default function AdminBills() {
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   )}
+                </div>
+              </div>
+              {/* Total Preview */}
+              <div className="col-span-2 p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black uppercase text-primary/60">Total Estimado</p>
+                  <p className="text-2xl font-display font-black solar-gradient-text">
+                    R$ {(calcSolar(parseFloat(form.injected_energy_kwh || '0'), units.find(u => u.id === form.consumer_unit_id), pricePerKwh) + parseFloat(form.energisa_bill_value || '0')).toFixed(2)}
+                  </p>
+                </div>
+                <div className="text-right text-[10px] font-bold text-muted-foreground/60 space-y-0.5">
+                  <p>Solar: R$ {calcSolar(parseFloat(form.injected_energy_kwh || '0'), units.find(u => u.id === form.consumer_unit_id), pricePerKwh).toFixed(2)}</p>
+                  <p>Energisa: R$ {parseFloat(form.energisa_bill_value || '0').toFixed(2)}</p>
                 </div>
               </div>
             </div>

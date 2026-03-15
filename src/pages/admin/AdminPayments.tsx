@@ -19,8 +19,31 @@ export default function AdminPayments() {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from('payments').select('*, energy_bills(month, year, total_amount, consumer_units(unit_name, clients(name)))').order('created_at', { ascending: false });
-      setPayments((data as any) || []);
+      // Fetch specifically from payments table (confirmed transactions)
+      const { data: payData } = await supabase
+        .from('payments')
+        .select('*, energy_bills(month, year, total_amount, consumer_units(unit_name, clients(name)))')
+        .order('payment_date', { ascending: false });
+      
+      // Also fetch bills that are marked as paid/confirmed but might not have a payment record yet
+      const { data: billData } = await supabase
+        .from('energy_bills')
+        .select('id, month, year, total_amount, payment_status, due_date, consumer_units(unit_name, clients(name))')
+        .in('payment_status', ['paid', 'confirmed'])
+        .order('due_date', { ascending: false });
+
+      // Merge and deduplicate (preferring actual payment records)
+      const paymentBillIds = new Set((payData || []).map(p => p.energy_bill_id));
+      const extraPayments: any[] = (billData || [])
+        .filter(b => !paymentBillIds.has(b.id))
+        .map(b => ({
+          id: `bill-${b.id}`,
+          payment_type: b.payment_status === 'confirmed' ? 'PIX' : 'Boleto/Outro',
+          payment_date: b.due_date,
+          energy_bills: b
+        }));
+
+      setPayments([...(payData || []), ...extraPayments]);
     };
     load();
   }, []);

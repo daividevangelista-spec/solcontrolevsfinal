@@ -90,7 +90,9 @@ export default function AdminNotifications() {
   const manualTrigger = async () => {
     toast.loading('Processando fila de envio manual...', { id: 'manual-trigger' });
     try {
-      const { data, error } = await supabase.functions.invoke('send-notifications');
+      const { data, error } = await supabase.functions.invoke('send-notifications', {
+        body: {}
+      });
       
       if (error) {
         if (error.message?.includes('401') || error.status === 401) {
