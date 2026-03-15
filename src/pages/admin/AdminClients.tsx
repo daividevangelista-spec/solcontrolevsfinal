@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Pencil, Trash2, Upload, UserCheck, UserMinus, ShieldCheck, Mail, Phone, MapPin, NotebookPen, CreditCard, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Client {
   id: string;
@@ -25,9 +26,11 @@ interface Client {
   pix_key: string | null;
   pix_qrcode_url: string | null;
   pix_holder_name: string | null;
+  created_by?: string | null;
 }
 
 export default function AdminClients() {
+  const { user, role } = useAuth();
   const [clients, setClients] = useState<Client[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Client | null>(null);
@@ -58,7 +61,10 @@ export default function AdminClients() {
         if (error) throw error;
         toast.success('Cliente atualizado!');
       } else {
-        const { error } = await supabase.from('clients').insert(form);
+        const { error } = await supabase.from('clients').insert({
+          ...form,
+          created_by: user?.id
+        } as any);
         if (error) throw error;
         toast.success('Cliente adicionado!');
       }
@@ -328,12 +334,18 @@ export default function AdminClients() {
                 </div>
 
                 <div className="p-6 sm:w-24 flex sm:flex-col gap-3 justify-center items-center bg-muted/5">
-                  <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-border/50 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all" onClick={() => openEdit(c)}>
-                    <Pencil className="w-5 h-5" />
-                  </Button>
-                  <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-destructive/20 text-destructive hover:bg-destructive/5 hover:border-destructive/40 transition-all" onClick={() => handleDelete(c.id)}>
-                    <Trash2 className="w-5 h-5" />
-                  </Button>
+                  {(role === 'admin' || c.created_by === user?.id) ? (
+                    <>
+                      <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-border/50 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all" onClick={() => openEdit(c)}>
+                        <Pencil className="w-5 h-5" />
+                      </Button>
+                      <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-destructive/20 text-destructive hover:bg-destructive/5 hover:border-destructive/40 transition-all" onClick={() => handleDelete(c.id)}>
+                        <Trash2 className="w-5 h-5" />
+                      </Button>
+                    </>
+                  ) : (
+                    <Badge variant="outline" className="text-[8px] uppercase opacity-50">Bloqueado</Badge>
+                  )}
                 </div>
               </div>
             </CardContent>

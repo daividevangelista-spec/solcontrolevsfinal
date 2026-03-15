@@ -5,10 +5,12 @@ import AdminBackups from "./AdminBackups";
 import AdminReports from "./AdminReports";
 import AdminNotifications from "./AdminNotifications";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminManagement() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { role } = useAuth();
 
   // Extract the active tab from the URL hash or use 'reports' as default
   const activeTab = location.hash.replace('#', '') || 'reports';
@@ -36,16 +38,21 @@ export default function AdminManagement() {
             <span className="hidden sm:inline">Notificações</span>
             <span className="sm:hidden">Alertas</span>
           </TabsTrigger>
-          <TabsTrigger value="backups" className="data-[state=active]:solar-gradient data-[state=active]:text-accent">
-            <Database className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Backups & Exportação</span>
-            <span className="sm:hidden">Backups</span>
-          </TabsTrigger>
-          <TabsTrigger value="audit" className="data-[state=active]:solar-gradient data-[state=active]:text-accent">
-            <History className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Logs de Auditoria</span>
-            <span className="sm:hidden">Auditoria</span>
-          </TabsTrigger>
+          
+          {role === 'admin' && (
+            <>
+              <TabsTrigger value="backups" className="data-[state=active]:solar-gradient data-[state=active]:text-accent">
+                <Database className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Backups & Exportação</span>
+                <span className="sm:hidden">Backups</span>
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="data-[state=active]:solar-gradient data-[state=active]:text-accent">
+                <History className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Logs de Auditoria</span>
+                <span className="sm:hidden">Auditoria</span>
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <div className="mt-6">

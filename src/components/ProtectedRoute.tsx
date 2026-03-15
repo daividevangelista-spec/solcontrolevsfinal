@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 
-export default function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: 'admin' | 'client' }) {
+export default function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: 'admin' | 'moderator' | 'client' }) {
   const { user, role, loading } = useAuth();
 
   if (loading) {
@@ -14,13 +14,15 @@ export default function ProtectedRoute({ children, requiredRole }: { children: R
 
   if (!user) return <Navigate to="/login" replace />;
   if (requiredRole && role !== requiredRole) {
-    // If role is strictly known as admin, go there. Otherwise fallback to dashboard.
-    // However, if we are ALREADY going to fallback to dashboard, but requiredRole WAS client
-    // (meaning role is somehow missing/null), we shouldn't infinite loop. We'll just render it as client.
+    // Admin routes should allow both admin and moderator
+    if (requiredRole === 'admin' && (role === 'admin' || role === 'moderator')) {
+      return <>{children}</>;
+    }
+
     if (requiredRole === 'client' && !role) {
       return <>{children}</>;
     }
-    return <Navigate to={role === 'admin' ? '/admin' : '/dashboard'} replace />;
+    return <Navigate to={(role === 'admin' || role === 'moderator') ? '/admin' : '/dashboard'} replace />;
   }
 
   return <>{children}</>;

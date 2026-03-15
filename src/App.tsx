@@ -33,7 +33,7 @@ function HomeRedirect() {
   const { user, role, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
-  return <Navigate to={role === "admin" ? "/admin" : "/dashboard"} replace />;
+  return <Navigate to={(role === "admin" || role === "moderator") ? "/admin" : "/dashboard"} replace />;
 }
 
 const App = () => (

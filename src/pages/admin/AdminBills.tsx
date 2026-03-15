@@ -21,6 +21,7 @@ import {
 import { toast } from 'sonner';
 import { pdf } from '@react-pdf/renderer';
 import { BillPDF } from '@/components/BillPDF';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Bill {
   id: string;
@@ -43,6 +44,7 @@ interface Bill {
   concessionaria_value?: number | null;
   concessionaria_bill_url?: string | null;
   utility_tariff_used?: number | null;
+  created_by?: string | null;
   consumer_units?: { 
     unit_name: string; 
     clients?: { 
@@ -92,6 +94,7 @@ function calcSolar(kwh: number, unit: Unit | undefined, defaultPrice: number): n
 }
 
 export default function AdminBills() {
+  const { user, role } = useAuth();
   const [loading, setLoading] = useState(true);
   const [bills, setBills] = useState<Bill[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -212,7 +215,7 @@ export default function AdminBills() {
         if (error) throw error;
         toast.success("Fatura atualizada!", { id: toastId });
       } else {
-        const { error } = await supabase.from('energy_bills').insert(payload as any);
+        const { error } = await supabase.from('energy_bills').insert({ ...payload as any, created_by: user?.id });
         if (error) throw error;
         toast.success("Fatura criada com sucesso!", { id: toastId });
       }
@@ -255,6 +258,7 @@ export default function AdminBills() {
         due_date: bulkForm.due_date,
         payment_status: 'pending',
         utility_tariff_used: standardUtilityTariff,
+        created_by: user?.id,
       }));
 
       const { error } = await supabase.from('energy_bills').insert(rows as any);
@@ -566,9 +570,11 @@ export default function AdminBills() {
                               </DropdownMenuItem>
                             )}
                             <div className="h-px bg-border my-1" />
-                            <DropdownMenuItem className="rounded-lg gap-2 text-[10px] font-black uppercase text-destructive hover:text-white hover:bg-destructive" onClick={() => handleDelete(b.id)}>
+                            {(role === 'admin' || b.created_by === user?.id) && (
+                              <DropdownMenuItem className="rounded-lg gap-2 text-[10px] font-black uppercase text-destructive hover:text-white hover:bg-destructive" onClick={() => handleDelete(b.id)}>
                                 <Trash2 className="w-3.5 h-3.5" /> Excluir Registro
-                            </DropdownMenuItem>
+                              </DropdownMenuItem>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Pencil, Trash2, Zap, Building2, MapPin, Hash, UserCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ConsumerUnit {
   id: string;
@@ -16,6 +17,7 @@ interface ConsumerUnit {
   unit_name: string;
   meter_number: string | null;
   address: string | null;
+  created_by?: string | null;
   clients?: { name: string } | null;
 }
 
@@ -25,6 +27,7 @@ interface Client {
 }
 
 export default function AdminUnits() {
+  const { user, role } = useAuth();
   const [units, setUnits] = useState<ConsumerUnit[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [open, setOpen] = useState(false);
@@ -52,7 +55,10 @@ export default function AdminUnits() {
         if (error) throw error;
         toast.success('Unidade atualizada!');
       } else {
-        const { error } = await supabase.from('consumer_units').insert(form);
+        const { error } = await supabase.from('consumer_units').insert({
+          ...form,
+          created_by: user?.id
+        } as any);
         if (error) throw error;
         toast.success('Unidade adicionada!');
       }
@@ -143,12 +149,18 @@ export default function AdminUnits() {
                     <Building2 className="w-6 h-6" />
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl border-border/50 hover:bg-primary/5 hover:text-primary" onClick={() => { setEditing(u); setForm({ client_id: u.client_id, unit_name: u.unit_name, meter_number: u.meter_number || '', address: u.address || '' }); setOpen(true); }}>
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl border-destructive/20 text-destructive hover:bg-destructive/5" onClick={() => handleDelete(u.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    {(role === 'admin' || u.created_by === user?.id) ? (
+                      <>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl border-border/50 hover:bg-primary/5 hover:text-primary" onClick={() => { setEditing(u); setForm({ client_id: u.client_id, unit_name: u.unit_name, meter_number: u.meter_number || '', address: u.address || '' }); setOpen(true); }}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl border-destructive/20 text-destructive hover:bg-destructive/5" onClick={() => handleDelete(u.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Badge variant="outline" className="text-[7px] uppercase opacity-40">Bloqueado</Badge>
+                    )}
                   </div>
                 </div>
 

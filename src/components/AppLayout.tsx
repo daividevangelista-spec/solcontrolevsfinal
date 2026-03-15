@@ -52,7 +52,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
-  const isAdmin = role === 'admin';
+  const isStaff = role === 'admin' || role === 'moderator';
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -69,9 +69,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
 
-          {/* Desktop nav - Ultra Compact */}
           <nav className="hidden md:flex items-center gap-1">
-            {isAdmin ? (
+            {isStaff ? (
               <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-lg border border-border/20">
                 {adminGroups.map((group, idx) => (
                   <DropdownMenu key={idx}>
@@ -90,17 +89,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-[180px] rounded-xl border-border/50 shadow-2xl p-1 backdrop-blur-lg">
-                      {group.links.map(link => (
-                        <DropdownMenuItem key={link.to} asChild className="rounded-lg">
-                          <Link 
-                            to={link.to} 
-                            className={`flex items-center gap-3 p-2 font-bold text-[11px] ${location.pathname === link.to ? 'text-primary bg-primary/5' : 'text-muted-foreground/80 hover:text-foreground'}`}
-                          >
-                            <link.icon className={`w-3.5 h-3.5 ${location.pathname === link.to ? 'text-primary' : 'opacity-50'}`} />
-                            {link.label}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
+                      {group.links
+                        .filter(link => role === 'admin' || link.to !== '/admin/users')
+                        .map(link => (
+                          <DropdownMenuItem key={link.to} asChild className="rounded-lg">
+                            <Link 
+                              to={link.to} 
+                              className={`flex items-center gap-3 p-2 font-bold text-[11px] ${location.pathname === link.to ? 'text-primary bg-primary/5' : 'text-muted-foreground/80 hover:text-foreground'}`}
+                            >
+                              <link.icon className={`w-3.5 h-3.5 ${location.pathname === link.to ? 'text-primary' : 'opacity-50'}`} />
+                              {link.label}
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ))}
@@ -156,27 +157,29 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
             
             <div className="grid grid-cols-1 gap-4">
-              {isAdmin ? adminGroups.map(group => (
+              {isStaff ? adminGroups.map(group => (
                 <div key={group.label} className="space-y-1">
                   <h4 className="px-3 text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">{group.label}</h4>
                   <div className="grid gap-0.5">
-                    {group.links.map(link => (
-                      <Button
-                        key={link.to}
-                        asChild
-                        variant="ghost"
-                        className={`w-full justify-start h-11 px-3 rounded-lg transition-all ${
-                          location.pathname === link.to 
-                            ? 'bg-primary/5 text-primary border border-primary/20 font-black' 
-                            : 'text-muted-foreground'
-                        }`}
-                      >
-                        <Link to={link.to} onClick={() => setMenuOpen(false)}>
-                          <link.icon className={`w-4 h-4 mr-4 ${location.pathname === link.to ? 'text-primary' : 'opacity-40'}`} />
-                          <span className="text-[11px] font-black uppercase tracking-tight">{link.label}</span>
-                        </Link>
-                      </Button>
-                    ))}
+                    {group.links
+                      .filter(link => role === 'admin' || link.to !== '/admin/users')
+                      .map(link => (
+                        <Button
+                          key={link.to}
+                          asChild
+                          variant="ghost"
+                          className={`w-full justify-start h-11 px-3 rounded-lg transition-all ${
+                            location.pathname === link.to 
+                              ? 'bg-primary/5 text-primary border border-primary/20 font-black' 
+                              : 'text-muted-foreground'
+                          }`}
+                        >
+                          <Link to={link.to} onClick={() => setMenuOpen(false)}>
+                            <link.icon className={`w-4 h-4 mr-4 ${location.pathname === link.to ? 'text-primary' : 'opacity-40'}`} />
+                            <span className="text-[11px] font-black uppercase tracking-tight">{link.label}</span>
+                          </Link>
+                        </Button>
+                      ))}
                   </div>
                 </div>
               )) : (
