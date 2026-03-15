@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Shield, UserPlus, ShieldPlus, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -13,7 +13,6 @@ interface UserRole {
   id: string;
   user_id: string;
   role: 'admin' | 'client';
-  created_at: string;
 }
 
 export default function AdminUsers() {
@@ -27,7 +26,7 @@ export default function AdminUsers() {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('user_roles').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('user_roles').select('*');
     if (error) toast.error('Erro ao carregar administradores.');
     else setRoles(data as any || []);
     setLoading(false);
@@ -95,6 +94,9 @@ export default function AdminUsers() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Conceder Acesso de Administrador</DialogTitle>
+              <DialogDescription className="sr-only">
+                Formulário para promover um usuário comum a administrador usando seu ID UUID.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
