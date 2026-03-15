@@ -9,7 +9,22 @@ const SOLCONTROLE_TOKEN = process.env.SOLCONTROLE_TOKEN || "solcontrole_secret_t
 
 app.use(express.json())
 
-// CORS & PNA (Private Network Access) Middleware
+// 1. Private Network Access (PNA) Middleware - MUST BE FIRST
+app.use((req, res, next) => {
+  if (req.headers["access-control-request-private-network"]) {
+    res.setHeader("Access-Control-Allow-Private-Network", "true")
+  }
+  
+  // Allow these early for preflights
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-api-key")
+  }
+
+  next()
+})
+
+// 2. Standard CORS Middleware
 app.use(cors({
   origin: (origin, callback) => callback(null, true),
   credentials: true,
@@ -17,19 +32,10 @@ app.use(cors({
   allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization", "x-api-key"]
 }))
 
-// Support for Private Network Access (Public site to Localhost)
+// 3. Logger Middleware
 app.use((req, res, next) => {
-  if (req.headers["access-control-request-private-network"]) {
-    res.setHeader("Access-Control-Allow-Private-Network", "true")
-  }
-
-  // Log incoming request info for auditing
   if (req.method !== "OPTIONS") {
-    console.log(`[BRIDGE] Request: ${req.method} ${req.url} from ${req.headers.origin || 'unknown origin'}`)
-  }
-  
-  if (req.method === "OPTIONS") {
-    return res.status(204).end()
+    console.log(`[BRIDGE] ${new Date().toLocaleTimeString()} - Request: ${req.method} ${req.url} from ${req.headers.origin || 'unknown'}`)
   }
   next()
 })
