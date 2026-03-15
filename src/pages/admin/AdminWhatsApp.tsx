@@ -27,7 +27,7 @@ interface BillData {
   year: number;
   total_amount: number;
   due_date: string;
-  energisa_bill_url?: string;
+  energisa_bill_file_url?: string;
 }
 
 export default function AdminWhatsApp() {
@@ -236,13 +236,13 @@ export default function AdminWhatsApp() {
 
         // v14.2: Append auto-bill link as fallback
         let energisaUrl = "";
-        if (isAutoBillMode && bill?.energisa_bill_url) {
+        if (isAutoBillMode && bill?.energisa_bill_file_url) {
           const { data: { publicUrl } } = supabase.storage
             .from('invoices')
-            .getPublicUrl(bill.energisa_bill_url);
+            .getPublicUrl(bill.energisa_bill_file_url);
           energisaUrl = publicUrl;
           
-          if (!substitutedText.includes("Link Fatura")) {
+          if (!substitutedText.includes("Download da Fatura")) {
             substitutedText += `\n\n📄 Download da Fatura: ${energisaUrl}`;
           }
         }
