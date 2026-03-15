@@ -190,55 +190,70 @@ serve(async (req) => {
             ? `R$ ${Number(finalSolarValue).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
             : 'R$ 0,00';
 
-          let message1 = "";
-          let message2 = pixKey || "---"; 
-          let message3 = ""; 
-
-          const portalUrl = `https://solcontrole-solar.vercel.app/login`;
-
-          if (notif.type === 'bill_reminder_3d') {
-            message1 = `⏰ *SolControle: Lembrete de Vencimento*\n\nSua fatura de energia solar de *${month}/${year}* vence em *3 dias* (${dueDate}).\n\n💰 *Valor da Energia Solar:* ${solarVal}\n📆 *Vencimento:* ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 *Titular:* ${pixHolderName}\n\n🔹 *Copia e Cola PIX:*`;
-            message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCodeUrl}\n\n📄 *Acessar sua fatura completa para baixar o boleto da taxa da ENERGISA e efetuar o pagamento:*\n${portalUrl}\n\nEvite juros pagando em dia! ☀️\n*SolControle*`;
-          } else if (notif.type === 'bill_overdue') {
-            message1 = `⚠️ *SolControle: Aviso de Atraso*\n\nConstatamos que sua fatura de energia solar de *${month}/${year}* (vencida em ${dueDate}) ainda não foi paga.\n\n💰 *Valor da Energia Solar:* ${solarVal}\n📆 *Vencimento:* ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 *Titular:* ${pixHolderName}\n\n🔹 *Copia e Cola PIX:*`;
-            message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCodeUrl}\n\n📄 *Acessar sua fatura completa para baixar o boleto da taxa da ENERGISA e efetuar o pagamento:*\n${portalUrl}\n\nRegularize sua situação para evitar encargos. Obrigado!\n*SolControle*`;
-          } else if (notif.type === 'payment_confirmed') {
-             message1 = `✅ *SolControle*\n\nPagamento confirmado!\n\nRecebemos seu pagamento de ${amount} referente a ${month}/${year}.\n\nObrigado!`;
-             message2 = "";
-          } else {
-            // Standard "bill_generated" template from user prompt
-            message1 = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: ${month}/${year}\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 Titular: ${pixHolderName}\n\n🔹 Copia e Cola PIX:`;
-            message3 = `📷 QR Code PIX (Link alternativo):\n${pixQrCodeUrl}\n\n📄 Acessar sua fatura completa para baixar o boleto da taxa da ENERGISA e efetuar o pagamento:\n${portalUrl}\n\nObrigado por utilizar energia solar ☀️\nSolControle`;
-          }
-
           const WHATSAPP_ENDPOINT = Deno.env.get("WHATSAPP_ENDPOINT") || "https://unantagonized-marceline-nonincriminating.ngrok-free.dev"
           const SOLCONTROLE_TOKEN = Deno.env.get("SOLCONTROLE_TOKEN") || "solcontrole_secret_token_2026"
           const headers = { "Content-Type": "application/json", "Authorization": `Bearer ${SOLCONTROLE_TOKEN}` };
 
-          // --- SEND SEQUENTIAL MESSAGES ---
+          const portalUrl = `https://solcontrole-solar.vercel.app/login`;
+
+          // --- PREPARE MESSAGE SEQUENCE ---
+          const msgs: string[] = [];
           
-          // 1. Main Info
-          if (message1) {
-            await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
-              method: "POST", headers,
-              body: JSON.stringify({ phone, text: message1 })
-            }).catch(e => console.error("Erro Msg1:", e.message));
+          if (notif.type === 'payment_confirmed') {
+            msgs.push(`✅ *SolControle*\n\nPagamento confirmado!\n\nRecebemos seu pagamento de ${amount} referente a ${month}/${year}.\n\nObrigado!`);
+          } else {
+            // Standard, Reminder, or Overdue
+            let intro = "";
+            let closing = "";
+            
+            if (notif.type === 'bill_reminder_3d') {
+              intro = `⏰ *SolControle: Lembrete de Vencimento*\n\nSua fatura de energia solar de *${month}/${year}* vence em *3 dias* (${dueDate}).`;
+              closing = `Evite juros pagando em dia! ☀️\n*SolControle*`;
+            } else if (notif.type === 'bill_overdue') {
+              intro = `⚠️ *SolControle: Aviso de Atraso*\n\nConstatamos que sua fatura de energia solar de *${month}/${year}* (vencida em ${dueDate}) ainda não foi paga.`;
+              closing = `Regularize sua situação para evitar encargos. Obrigado!\n*SolControle*`;
+            } else {
+              intro = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.`;
+              closing = `Obrigado por utilizar energia solar ☀️\n*SolControle*`;
+            }
+
+            // M1: Intro
+            msgs.push(intro);
+
+            // M2: Consumption Info
+            msgs.push(`📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: *${solarVal}*\n📆 Vencimento: *${dueDate}*`);
+
+            // M3: PIX Header + Holder
+            msgs.push(`💳 *PAGAMENTO VIA PIX*\n\n👤 Titular: *${pixHolderName}*\n\n🔹 *Copia e Cola PIX:*`);
+
+            // M4: Pure PIX Key
+            if (pixKey && pixKey !== "---") msgs.push(pixKey);
+
+            // M5: QR Link + Portal + Closing
+            msgs.push(`📷 *QR Code PIX (Link alternativo):*\n${pixQrCodeUrl}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\n${closing}`);
           }
 
-          // 2. Pure PIX Code
-          if (message2 && message2 !== "---") {
+          // --- SEND SEQUENTIAL MESSAGES ---
+          for (const text of msgs) {
             await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
               method: "POST", headers,
-              body: JSON.stringify({ phone, text: message2 })
-            }).catch(e => console.error("Erro Msg2:", e.message));
+              body: JSON.stringify({ phone, text })
+            }).catch(e => console.error("Erro no envio:", e.message));
+            
+            // Wait 500ms between messages to ensure order
+            await new Promise(r => setTimeout(r, 500));
           }
 
-          // 3. Links & Closing
-          if (message3) {
+          // M6: Energisa Bill Attachment (if available)
+          const energisaUrl = billData?.concessionaria_bill_url || (billData as any)?.energisa_bill_file_url;
+          if (energisaUrl && notif.type !== 'payment_confirmed') {
              await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
-              method: "POST", headers,
-              body: JSON.stringify({ phone, text: message3 })
-            }).catch(e => console.error("Erro Msg3:", e.message));
+               method: "POST", headers,
+               body: JSON.stringify({ 
+                 phone, 
+                 text: `📄 *Download Fatura Energisa:*\n${energisaUrl}` 
+               })
+             }).catch(e => console.error("Erro Msg6:", e.message));
           }
 
           sent=true

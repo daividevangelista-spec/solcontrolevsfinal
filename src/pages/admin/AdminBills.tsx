@@ -105,6 +105,7 @@ export default function AdminBills() {
   const [bulkOpen, setBulkOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
   const [uploadingBoleto, setUploadingBoleto] = useState(false);
+  const [energisaFile, setEnergisaFile] = useState<File | null>(null);
 
   const [form, setForm] = useState({
     consumer_unit_id: '', month: '', year: new Date().getFullYear().toString(),
@@ -166,38 +167,64 @@ export default function AdminBills() {
     // Total depends on billing mode
     const total = form.billing_mode === 'combined'
       ? solar + energisa
-      : solar; // In separate mode, client pays solar via PIX; concessionaria paid externally
+      : solar;
 
-    const payload = {
-      consumer_unit_id: form.consumer_unit_id,
-      month: parseInt(form.month),
-      year: parseInt(form.year),
-      consumption_kwh: kwh,
-      injected_energy_kwh: kwh,
-      energisa_bill_value: energisa,
-      due_date: form.due_date,
-      utility_tariff_used: standardUtilityTariff,
-      price_per_kwh: pricePerKwh,
-      solar_energy_value: solar,
-      total_amount: total,
-      billing_mode: form.billing_mode,
-      concessionaria_value: concessionaria,
-    };
+    let energisaUrl = editingBill?.concessionaria_bill_url || null;
+
+    setUploadingBoleto(true);
+    const toastId = toast.loading(editingBill ? "Salvando alterações..." : "Criando fatura...");
 
     try {
+      // 1. Upload Energisa Bill if selected
+      if (energisaFile) {
+        const fileExt = energisaFile.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const path = `energisa/${fileName}`;
+        
+        const { error: uploadErr } = await supabase.storage
+          .from('invoices')
+          .upload(path, energisaFile);
+        
+        if (uploadErr) throw uploadErr;
+
+        const { data: urlData } = supabase.storage.from('invoices').getPublicUrl(path);
+        energisaUrl = urlData.publicUrl;
+      }
+
+      const payload = {
+        consumer_unit_id: form.consumer_unit_id,
+        month: parseInt(form.month),
+        year: parseInt(form.year),
+        consumption_kwh: kwh,
+        injected_energy_kwh: kwh,
+        energisa_bill_value: energisa,
+        due_date: form.due_date,
+        utility_tariff_used: standardUtilityTariff,
+        price_per_kwh: pricePerKwh,
+        solar_energy_value: solar,
+        total_amount: total,
+        billing_mode: form.billing_mode,
+        concessionaria_value: concessionaria,
+        concessionaria_bill_url: energisaUrl,
+      };
+
       if (editingBill) {
         const { error } = await supabase.from('energy_bills').update(payload as any).eq('id', editingBill.id);
         if (error) throw error;
-        toast.success("Fatura atualizada!");
+        toast.success("Fatura atualizada!", { id: toastId });
       } else {
         const { error } = await supabase.from('energy_bills').insert(payload as any);
         if (error) throw error;
-        toast.success("Fatura criada com sucesso!");
+        toast.success("Fatura criada com sucesso!", { id: toastId });
       }
+      
+      setEnergisaFile(null);
       setOpen(false);
       load();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message, { id: toastId });
+    } finally {
+      setUploadingBoleto(false);
     }
   };
 
@@ -407,7 +434,7 @@ export default function AdminBills() {
             <Button variant="outline" className="h-10 bg-white/10 border-white/20 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/20" onClick={() => setBulkOpen(true)}>
               <Zap className="w-3.5 h-3.5 mr-2" /> Gerar Lote Mês
             </Button>
-            <Button className="h-10 solar-gradient text-accent rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/30" onClick={() => { setEditingBill(null); setForm({ consumer_unit_id: '', month: '', year: new Date().getFullYear().toString(), injected_energy_kwh: '', energisa_bill_value: '', due_date: '', billing_mode: 'combined', concessionaria_value: '' }); setOpen(true); }}>
+            <Button className="h-10 solar-gradient text-accent rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/30" onClick={() => { setEditingBill(null); setEnergisaFile(null); setForm({ consumer_unit_id: '', month: '', year: new Date().getFullYear().toString(), injected_energy_kwh: '', energisa_bill_value: '', due_date: '', billing_mode: 'combined', concessionaria_value: '' }); setOpen(true); }}>
               <Plus className="w-3.5 h-3.5 mr-2" /> Nova Fatura
             </Button>
           </div>
@@ -631,41 +658,24 @@ export default function AdminBills() {
                 </Select>
               </div>
 
-              {/* Separate mode: concessionaria value + boleto upload */}
-              {form.billing_mode === 'separate' && (
-                <>
-                  <div className="space-y-1">
-                    <Label className="text-[10px] font-black text-orange-600 uppercase px-1">🏢 Valor Concessionária (R$)</Label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-muted-foreground/40 text-sm">R$</span>
-                      <Input type="number" step="0.01" value={form.concessionaria_value} onChange={e => setForm({ ...form, concessionaria_value: e.target.value })} className="h-12 pl-12 rounded-xl font-black text-xl bg-orange-50 border-orange-200 text-center" placeholder="0" />
-                    </div>
-                  </div>
-
-                  {editingBill && (
-                    <div className="space-y-1">
-                      <Label className="text-[10px] font-black text-orange-600 uppercase px-1">Boleto PDF (Upload)</Label>
-                      <label className="flex items-center gap-2 h-12 px-4 rounded-xl bg-orange-50 border border-orange-200 cursor-pointer hover:bg-orange-100 transition-all">
-                        <input type="file" accept=".pdf,application/pdf" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f && editingBill) handleUploadBoleto(f, editingBill.id); }} />
-                        {uploadingBoleto ? <Loader2 className="w-4 h-4 text-orange-600 animate-spin" /> : <Upload className="w-4 h-4 text-orange-600" />}
-                        <span className="text-xs font-bold text-orange-600 truncate">
-                          {editingBill.concessionaria_bill_url ? 'Boleto já enviado ✓' : 'Selecionar PDF'}
-                        </span>
-                      </label>
-                      {editingBill.concessionaria_bill_url && (
-                        <p className="text-[9px] text-orange-600/60 px-1 truncate">{editingBill.concessionaria_bill_url}</p>
-                      )}
-                    </div>
+              {/* Energisa Bill Upload (Unified) */}
+              <div className="col-span-2 space-y-1">
+                <Label className="text-[10px] font-black text-info uppercase px-1">Fatura Energisa (Upload)</Label>
+                <div className="flex items-center gap-2">
+                  <label className="flex-1 flex items-center gap-3 h-12 px-4 rounded-xl bg-info/5 border border-info/20 cursor-pointer hover:bg-info/10 transition-all">
+                    <input type="file" accept="image/*,.pdf" className="hidden" onChange={e => setEnergisaFile(e.target.files?.[0] || null)} />
+                    <Upload className="w-4 h-4 text-info" />
+                    <span className="text-xs font-bold text-info truncate">
+                      {energisaFile ? energisaFile.name : (editingBill?.concessionaria_bill_url ? 'Arquivo já anexado ✓' : 'Selecionar Arquivo (PDF/Imagem)')}
+                    </span>
+                  </label>
+                  {energisaFile && (
+                    <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl text-destructive hover:bg-destructive/10" onClick={() => setEnergisaFile(null)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   )}
-
-                  {!editingBill && (
-                    <div className="col-span-2 space-y-1">
-                      <Label className="text-[10px] font-black text-orange-600/70 uppercase px-1">Boleto PDF</Label>
-                      <p className="text-[9px] text-muted-foreground/60 px-1">Salve a fatura primeiro, depois edite para anexar o boleto PDF.</p>
-                    </div>
-                  )}
-                </>
-              )}
+                </div>
+              </div>
             </div>
 
             <Button onClick={handleCreateOrUpdate} className="w-full h-12 rounded-2xl solar-gradient text-accent font-black text-sm tracking-widest shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all active:scale-95 mt-2">
