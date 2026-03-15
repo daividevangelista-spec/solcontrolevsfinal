@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { 
   Send, MessageSquare, CheckCircle2, AlertCircle, 
   Users, Search, UserPlus2, UserMinus2, Phone, 
-  Zap, Info as InfoIcon, XCircle, Trash2
+  Zap, Info as InfoIcon, XCircle, Trash2,
+  Paperclip, FileText, FileUp, Database, Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +18,16 @@ interface Client {
   id: string;
   name: string;
   phone: string | null;
+  pix_key?: string;
+}
+
+interface BillData {
+  id: string;
+  month: number;
+  year: number;
+  total_amount: number;
+  due_date: string;
+  energisa_bill_url?: string;
 }
 
 export default function AdminWhatsApp() {
@@ -26,6 +37,11 @@ export default function AdminWhatsApp() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
+  
+  // New States (v14)
+  const [files, setFiles] = useState<(File | null)[]>([null, null, null]);
+  const [isAutoBillMode, setIsAutoBillMode] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   useEffect(() => {
     loadClients();
@@ -43,6 +59,18 @@ export default function AdminWhatsApp() {
     } else {
       setClients(data || []);
     }
+  };
+
+  const handleFileChange = (index: number, file: File | null) => {
+    const newFiles = [...files];
+    newFiles[index] = file;
+    setFiles(newFiles);
+  };
+
+  const removeFile = (index: number) => {
+    const newFiles = [...files];
+    newFiles[index] = null;
+    setFiles(newFiles);
   };
 
   const formatWhatsAppNumber = (phone: string) => {
@@ -63,6 +91,39 @@ export default function AdminWhatsApp() {
     }
 
     return cleaned;
+  };
+
+  const replaceVariables = (text: string, client: Client, bill?: BillData) => {
+    let result = text;
+    
+    const monthNames = [
+      "", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+
+    const monthName = bill ? monthNames[bill.month] || bill.month.toString() : '---';
+    const monthYear = bill ? `${monthName}/${bill.year}` : '---';
+    const amount = bill ? `R$ ${bill.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '---';
+    const dueDate = bill ? new Date(bill.due_date + 'T12:00:00').toLocaleDateString('pt-BR') : '---';
+
+    result = result.replace(/{nome_cliente}/g, client.name || '---');
+    result = result.replace(/{telefone_cliente}/g, client.phone || '---');
+    result = result.replace(/{mes_referencia}/g, monthYear);
+    result = result.replace(/{valor_fatura}/g, amount);
+    result = result.replace(/{data_vencimento}/g, dueDate);
+    
+    return result;
+  };
+
+  const handleAutoBillTemplate = async () => {
+    if (selectedNumbers.length === 0) {
+      toast.error("Selecione pelo menos um cliente para gerar a fatura automática.");
+      return;
+    }
+
+    setIsAutoBillMode(true);
+    setText(`Olá {nome_cliente}! ☀️\n\nSua fatura SolControle referente a {mes_referencia} já está disponível.\n\n💰 Valor: {valor_fatura}\n📅 Vencimento: {data_vencimento}\n\nSegue sua fatura em anexo.\n\nObrigado!`);
+    toast.success("Template de fatura aplicado e variáveis configuradas!");
   };
 
   const toggleRecipient = (phone: string) => {
@@ -113,48 +174,128 @@ export default function AdminWhatsApp() {
     setLoading(true);
     setProgress({ current: 0, total: numbers.length });
 
-    let successCount = 0;
-    let failCount = 0;
+    try {
+      // 1. Upload Attachments if any
+      const uploadedUrls: string[] = [];
+      for (const file of files) {
+        if (file) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+          const filePath = `broadcasts/${fileName}`;
 
-    for (let i = 0; i < numbers.length; i++) {
+          const { error: uploadError, data } = await supabase.storage
+            .from('invoices')
+            .upload(filePath, file);
+
+          if (uploadError) {
+            console.error("Error uploading file:", uploadError);
+            toast.error(`Falha ao enviar anexo: ${file.name}`);
+            continue;
+          }
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('invoices')
+            .getPublicUrl(filePath);
+          
+          uploadedUrls.push(publicUrl);
+        }
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      // 2. Loop through recipients
+      for (let i = 0; i < numbers.length; i++) {
         const num = numbers[i];
         const chatId = num.includes("@c.us") ? num : `${num}@c.us`;
         
+        // Find client for substitution
+        const client = clients.find(c => c.phone && formatWhatsAppNumber(c.phone) === num);
+        let bill: BillData | undefined;
+
+        // Fetch Bill Data if variables are present or in Auto-Bill mode
+        const hasVariables = text.includes("{") && text.includes("}");
+        if (client && (isAutoBillMode || hasVariables)) {
+          const { data: billData } = await supabase
+            .from('energy_bills')
+            .select('*')
+            .eq('consumer_unit_id', (await supabase.from('consumer_units').select('id').eq('client_id', client.id).maybeSingle()).data?.id)
+            .order('month', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          if (billData) bill = billData as BillData;
+        }
+
+        const substitutedText = client ? replaceVariables(text, client, bill) : text;
+
         try {
-          const response = await fetch("http://localhost:3000/api/sendText", {
+          // A. Send Text Message
+          const textRes = await fetch("http://localhost:3333/send-whatsapp", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Api-Key": "solcontrole123",
-            },
-            body: JSON.stringify({
-              session: "default",
-              chatId: chatId,
-              text: text,
-            }),
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer solcontrole_secret_token_2026` },
+            body: JSON.stringify({ phone: num, text: substitutedText }),
           });
-  
-          if (response.ok) {
-            successCount++;
-          } else {
-            failCount++;
+
+          if (!textRes.ok) throw new Error("Failed to send text");
+
+          // B. Send Manual Attachments
+          for (const url of uploadedUrls) {
+            await new Promise(r => setTimeout(r, 1000)); // Delay between files
+            await fetch("http://localhost:3333/send-whatsapp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": `Bearer solcontrole_secret_token_2026` },
+              body: JSON.stringify({ 
+                phone: num, 
+                file: url, 
+                filename: url.split('/').pop() || "arquivo" 
+              }),
+            });
           }
+
+          // C. Send Automatic Bill (Energisa) if Auto-Bill Mode
+          if (isAutoBillMode && bill?.energisa_bill_url) {
+            const { data: { publicUrl: energisaUrl } } = supabase.storage
+              .from('invoices')
+              .getPublicUrl(bill.energisa_bill_url);
+
+            await new Promise(r => setTimeout(r, 1000));
+            await fetch("http://localhost:3333/send-whatsapp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": `Bearer solcontrole_secret_token_2026` },
+              body: JSON.stringify({ 
+                phone: num, 
+                file: energisaUrl, 
+                filename: `Fatura_Energisa_${bill.month}_${bill.year}.pdf` 
+              }),
+            });
+          }
+
+          successCount++;
         } catch (error) {
           console.error(`Error sending to ${num}:`, error);
           failCount++;
         }
         
         setProgress({ current: i + 1, total: numbers.length });
-    }
+        await new Promise(r => setTimeout(r, 1000)); // Cool down between clients
+      }
 
-    setLoading(false);
-    setProgress(null);
+      if (failCount === 0) {
+        toast.success(numbers.length > 1 ? `Todas as ${successCount} mensagens enviadas!` : "Mensagem enviada com sucesso!");
+        setText("");
+        setFiles([null, null, null]);
+        setIsAutoBillMode(false);
+      } else {
+        toast.info(`Envio finalizado: ${successCount} sucessos, ${failCount} falhas.`);
+      }
 
-    if (failCount === 0) {
-      toast.success(numbers.length > 1 ? `Todas as ${successCount} mensagens enviadas!` : "Mensagem enviada com sucesso!");
-      setText("");
-    } else {
-      toast.info(`Envio finalizado: ${successCount} sucessos, ${failCount} falhas.`);
+    } catch (err: any) {
+      console.error("Bulk Send Error:", err);
+      toast.error("Ocorreu um erro crítico durante o envio.");
+    } finally {
+      setLoading(false);
+      setProgress(null);
     }
   };
 
@@ -293,6 +434,46 @@ export default function AdminWhatsApp() {
                 </div>
               </div>
 
+              {/* v14: Auto-Bill and Variables Section */}
+              <div className="space-y-4 pt-4 border-t border-border/30">
+                <div className="flex flex-wrap items-center justify-between gap-4 px-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-warning animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ferramentas Inteligentes</span>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    className={`h-9 px-4 rounded-xl font-bold text-[11px] gap-2 transition-all ${isAutoBillMode ? 'bg-primary/10 border-primary/40 text-primary' : 'hover:border-primary/50'}`}
+                    onClick={handleAutoBillTemplate}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    ENVIAR FATURA DO CLIENTE
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                  {[
+                    { label: "{nome_cliente}", icon: Users },
+                    { label: "{telefone_cliente}", icon: Phone },
+                    { label: "{mes_referencia}", icon: Database },
+                    { label: "{valor_fatura}", icon: Sparkles },
+                    { label: "{data_vencimento}", icon: AlertCircle },
+                  ].map((v) => (
+                    <div 
+                      key={v.label}
+                      title="Clique para inserir"
+                      onClick={() => setText(prev => prev + v.label)}
+                      className="p-2 rounded-lg bg-muted/5 border border-border/40 flex items-center gap-2 cursor-pointer hover:bg-primary/5 hover:border-primary/20 transition-all"
+                    >
+                      <v.icon className="w-3 h-3 text-primary/40" />
+                      <span className="text-[9px] font-mono font-bold text-muted-foreground/80">{v.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="space-y-4">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Texto da Mensagem</Label>
                 <div className="relative">
@@ -303,6 +484,55 @@ export default function AdminWhatsApp() {
                     onChange={(e) => setText(e.target.value)}
                     disabled={loading}
                   />
+                </div>
+              </div>
+
+              {/* v14: Attachments Section */}
+              <div className="space-y-4 pt-4 border-t border-border/30">
+                <div className="flex items-center gap-2 px-1">
+                  <Paperclip className="w-4 h-4 text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Anexos (Máx 3)</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {files.map((file, idx) => (
+                    <div key={idx} className="relative">
+                      <div className={`p-4 rounded-2xl border-2 border-dashed transition-all ${file ? 'bg-primary/5 border-primary/20' : 'bg-muted/5 border-border/50 hover:border-primary/30'}`}>
+                        {file ? (
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                              <FileUp className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[10px] font-bold truncate">{file.name}</p>
+                              <p className="text-[9px] font-black opacity-40 uppercase">{(file.size / 1024).toFixed(0)} KB</p>
+                            </div>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 w-6 p-0 rounded-full hover:bg-destructive/10 hover:text-destructive"
+                              onClick={() => removeFile(idx)}
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="relative cursor-pointer">
+                            <input 
+                              type="file" 
+                              className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                              onChange={(e) => handleFileChange(idx, e.target.files?.[0] || null)}
+                            />
+                            <div className="flex flex-col items-center gap-1 py-1">
+                              <FileText className="w-4 h-4 text-muted-foreground/30" />
+                              <span className="text-[9px] font-black text-muted-foreground/50 uppercase">Arquivo {idx + 1}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

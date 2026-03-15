@@ -16,7 +16,7 @@ app.post("/send-whatsapp", async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" })
   }
 
-  const { phone, text, image, caption } = req.body
+  const { phone, text, image, file, filename, caption } = req.body
 
   try {
     let endpoint = "sendText"
@@ -26,13 +26,15 @@ app.post("/send-whatsapp", async (req, res) => {
       text: text
     }
 
-    if (image) {
-      endpoint = "sendImage"
+    if (image || file) {
+      // WAHA provides sendImage and sendFile (for documents)
+      endpoint = image ? "sendImage" : "sendFile"
       body = {
         session: "default",
         chatId: `${phone}@c.us`,
-        file: image,
-        caption: caption || ""
+        file: image || file,
+        caption: caption || "",
+        ...(file ? { filename: filename || "documento" } : {})
       }
     }
 
@@ -46,7 +48,7 @@ app.post("/send-whatsapp", async (req, res) => {
     })
 
     console.log(`[WAHA] Enviando ${endpoint} para ${phone}...`)
-    if (image) console.log(`[WAHA] URL da Imagem: ${image}`)
+    if (image || file) console.log(`[WAHA] URL do Arquivo: ${image || file}`)
 
     const data = await response.json()
     console.log(`[WAHA] Resposta:`, JSON.stringify(data))
