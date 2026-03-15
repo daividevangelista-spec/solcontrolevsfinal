@@ -91,3 +91,24 @@ ALTER TABLE public.user_roles
 DROP CONSTRAINT IF EXISTS user_roles_user_id_fkey_profiles,
 ADD CONSTRAINT user_roles_user_id_fkey_profiles 
 FOREIGN KEY (user_id) REFERENCES public.profiles(user_id) ON DELETE CASCADE;
+
+-- 10. Master Admin Protection (daivid.evangelista@edu.mt.gov.br)
+-- This prevents the root admin from being demoted or removed, even via other admins.
+CREATE OR REPLACE FUNCTION public.protect_master_admin()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if the user being modified is the master admin by email
+    IF EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE user_id = OLD.user_id AND email = 'daivid.evangelista@edu.mt.gov.br'
+    ) THEN
+        RAISE EXCEPTION 'A função de Administrador Master não pode ser removida ou alterada pelo sistema.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS tr_protect_master_admin ON public.user_roles;
+CREATE TRIGGER tr_protect_master_admin
+BEFORE UPDATE OR DELETE ON public.user_roles
+FOR EACH ROW EXECUTE FUNCTION public.protect_master_admin();

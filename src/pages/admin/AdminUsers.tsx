@@ -276,9 +276,11 @@ export default function AdminUsers() {
                       </div>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDemote(member.id, member.profiles?.name || 'membro')}>
-                    <UserMinus className="w-4 h-4 mr-2" /> Remover
-                  </Button>
+                  {member.profiles?.email !== 'daivid.evangelista@edu.mt.gov.br' && (
+                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDemote(member.id, member.profiles?.name || 'membro')}>
+                      <UserMinus className="w-4 h-4 mr-2" /> Remover
+                    </Button>
+                  )}
                 </div>
               ))
             )}
