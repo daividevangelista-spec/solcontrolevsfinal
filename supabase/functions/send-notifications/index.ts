@@ -153,10 +153,10 @@ serve(async (req) => {
 
           const payload=notif.payload||{}
           
-          // NEW: Fetch fresh bill data to ensure values are updated (e.g., after bulk generate + edit)
+          // NEW: Fetch fresh bill data + client fallback for holder name
           const { data: billData } = await supabase
             .from('energy_bills')
-            .select('*')
+            .select('*, consumer_units(clients(pix_holder_name))')
             .eq('id', notif.bill_id)
             .maybeSingle();
 
@@ -165,10 +165,17 @@ serve(async (req) => {
           const finalSolarValue = billData?.solar_energy_value ?? payload.solar_energy_value;
           const finalTotalAmount = billData?.total_amount ?? payload.amount;
           const finalDueDate = billData?.due_date ?? payload.due_date;
-          // Fallback hierarchy: Bill Record -> Notification Payload -> Global Settings
-          const finalPixCode = billData?.pix_copy_paste ?? payload.pix_key ?? globalSettings?.pix_key;
-          const finalPixQr = billData?.pix_qrcode_url ?? payload.pix_qrcode ?? globalSettings?.pix_qr_code_url;
-          const finalPixHolder = billData?.pix_holder_name ?? payload.pix_holder_name ?? globalSettings?.pix_receiver;
+          
+          // PIX Mapping
+          const pixKey = billData?.pix_copy_paste ?? payload.pix_key ?? globalSettings?.pix_key;
+          const pixQrCodeUrl = billData?.pix_qrcode_url ?? payload.pix_qrcode ?? globalSettings?.pix_qr_code_url;
+          
+          // Holder Name Fallback: Bill -> Client -> Global
+          const pixHolderName = billData?.pix_holder_name 
+            || (billData as any)?.consumer_units?.clients?.pix_holder_name 
+            || payload.pix_holder_name 
+            || globalSettings?.pix_receiver 
+            || "---";
 
           const amount = finalTotalAmount
             ? `R$ ${Number(finalTotalAmount).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
@@ -178,48 +185,39 @@ serve(async (req) => {
           const dueDate = finalDueDate
             ? new Date(finalDueDate+'T12:00:00').toLocaleDateString('pt-BR')
             : ''
-          const pixCode = finalPixCode || "---"
-          const pixHolder = finalPixHolder || "---"
           
-          // Dynamic QR Fallback: If no static URL, generate one from the PIX code
-          const pixQrCode = finalPixQr || (pixCode !== "---" 
-            ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&qzone=1&data=${encodeURIComponent(pixCode)}`
-            : null);
-
-          let message1 = "";
-          let message2 = ""; 
-          let message3 = ""; 
-
           const solarVal = (finalSolarValue !== undefined && finalSolarValue !== null)
             ? `R$ ${Number(finalSolarValue).toLocaleString('pt-BR',{minimumFractionDigits:2})}`
             : 'R$ 0,00';
+
+          let message1 = "";
+          let message2 = pixKey || "---"; 
+          let message3 = ""; 
+
           const portalUrl = `https://solcontrole-solar.vercel.app/login`;
-          const qrLink = pixQrCode ? `\n\n📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}` : '';
 
           if (notif.type === 'bill_reminder_3d') {
-            message1 = `⏰ *SolControle: Lembrete de Vencimento*\n\nSua fatura de energia solar de *${month}/${year}* vence em *3 dias* (${dueDate}).\n\n💰 *Valor:* ${amount}\n💰 *Energia Solar:* ${solarVal}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 *Titular:* ${pixHolder}\n\n🔹 *Copia e Cola PIX:*`;
-            message2 = pixCode;
-            message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nEvite juros pagando em dia! ☀️\n*SolControle*`;
+            message1 = `⏰ *SolControle: Lembrete de Vencimento*\n\nSua fatura de energia solar de *${month}/${year}* vence em *3 dias* (${dueDate}).\n\n💰 *Valor da Energia Solar:* ${solarVal}\n📆 *Vencimento:* ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 *Titular:* ${pixHolderName}\n\n🔹 *Copia e Cola PIX:*`;
+            message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCodeUrl}\n\n📄 *Acessar sua fatura completa para baixar o boleto da taxa da ENERGISA e efetuar o pagamento:*\n${portalUrl}\n\nEvite juros pagando em dia! ☀️\n*SolControle*`;
           } else if (notif.type === 'bill_overdue') {
-            message1 = `⚠️ *SolControle: Aviso de Atraso*\n\nConstatamos que sua fatura de energia solar de *${month}/${year}* (vencida em ${dueDate}) ainda não foi paga.\n\n💰 *Valor:* ${amount}\n💰 *Energia Solar:* ${solarVal}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 *Titular:* ${pixHolder}\n\n🔹 *Copia e Cola PIX:*`;
-            message2 = pixCode;
-            message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nRegularize sua situação para evitar encargos. Obrigado!\n*SolControle*`;
+            message1 = `⚠️ *SolControle: Aviso de Atraso*\n\nConstatamos que sua fatura de energia solar de *${month}/${year}* (vencida em ${dueDate}) ainda não foi paga.\n\n💰 *Valor da Energia Solar:* ${solarVal}\n📆 *Vencimento:* ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 *Titular:* ${pixHolderName}\n\n🔹 *Copia e Cola PIX:*`;
+            message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCodeUrl}\n\n📄 *Acessar sua fatura completa para baixar o boleto da taxa da ENERGISA e efetuar o pagamento:*\n${portalUrl}\n\nRegularize sua situação para evitar encargos. Obrigado!\n*SolControle*`;
           } else if (notif.type === 'payment_confirmed') {
              message1 = `✅ *SolControle*\n\nPagamento confirmado!\n\nRecebemos seu pagamento de ${amount} referente a ${month}/${year}.\n\nObrigado!`;
+             message2 = "";
           } else {
-            message1 = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: *${month}/${year}*\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 *Titular:* ${pixHolder}\n\n🔹 Copia e Cola PIX:`;
-            message2 = pixCode;
-            message3 = `📷 *QR Code PIX (Link alternativo):*\n${pixQrCode}\n\n📄 *Acessar sua fatura completa:*\n${portalUrl}\n\nObrigado por utilizar energia solar ☀️\n*SolControle*`;
+            // Standard "bill_generated" template from user prompt
+            message1 = `🌞 *SolControle — Fatura de Energia Solar*\n\nOlá!\n\nSua nova fatura de energia solar já está disponível.\n\n📅 Referência: ${month}/${year}\n💰 Valor da Energia Solar: ${solarVal}\n📆 Vencimento: ${dueDate}\n\n💳 *PAGAMENTO VIA PIX*\n\n👤 Titular: ${pixHolderName}\n\n🔹 Copia e Cola PIX:`;
+            message3 = `📷 QR Code PIX (Link alternativo):\n${pixQrCodeUrl}\n\n📄 Acessar sua fatura completa para baixar o boleto da taxa da ENERGISA e efetuar o pagamento:\n${portalUrl}\n\nObrigado por utilizar energia solar ☀️\nSolControle`;
           }
 
           const WHATSAPP_ENDPOINT = Deno.env.get("WHATSAPP_ENDPOINT") || "https://unantagonized-marceline-nonincriminating.ngrok-free.dev"
           const SOLCONTROLE_TOKEN = Deno.env.get("SOLCONTROLE_TOKEN") || "solcontrole_secret_token_2026"
-          const headers = {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${SOLCONTROLE_TOKEN}`
-          };
+          const headers = { "Content-Type": "application/json", "Authorization": `Bearer ${SOLCONTROLE_TOKEN}` };
 
-          // --- SEND MESSAGE 1 (TEXT: INFO) ---
+          // --- SEND SEQUENTIAL MESSAGES ---
+          
+          // 1. Main Info
           if (message1) {
             await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
               method: "POST", headers,
@@ -227,7 +225,7 @@ serve(async (req) => {
             }).catch(e => console.error("Erro Msg1:", e.message));
           }
 
-          // --- SEND MESSAGE 2 (TEXT: PIX CODE) ---
+          // 2. Pure PIX Code
           if (message2 && message2 !== "---") {
             await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
               method: "POST", headers,
@@ -235,25 +233,12 @@ serve(async (req) => {
             }).catch(e => console.error("Erro Msg2:", e.message));
           }
 
-          // --- SEND MESSAGE 3 (TEXT: LINKS - GUARANTEED) ---
+          // 3. Links & Closing
           if (message3) {
              await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
               method: "POST", headers,
               body: JSON.stringify({ phone, text: message3 })
             }).catch(e => console.error("Erro Msg3:", e.message));
-          }
-
-          // --- SEND MESSAGE 4 (IMAGE: QR CODE - OPTIONAL) ---
-          if (pixQrCode && (notif.type === 'bill_generated' || notif.type === 'bill_reminder_3d' || notif.type === 'bill_overdue')) {
-            console.log(`Enviando QR Code PIX como imagem para ${phone}`);
-            await fetch(`${WHATSAPP_ENDPOINT}/send-whatsapp`, {
-              method: "POST", headers,
-              body: JSON.stringify({
-                phone,
-                image: pixQrCode,
-                caption: "📷 QR Code para pagamento"
-              })
-            }).catch(e => console.error("Erro Msg4 (Imagem):", e.message));
           }
 
           sent=true
