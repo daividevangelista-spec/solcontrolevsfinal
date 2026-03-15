@@ -227,7 +227,25 @@ export default function AdminWhatsApp() {
           if (billData) bill = billData as BillData;
         }
 
-        const substitutedText = client ? replaceVariables(text, client, bill) : text;
+        let substitutedText = client ? replaceVariables(text, client, bill) : text;
+
+        // v14.2: Append manual attachment links as fallback
+        if (uploadedUrls.length > 0) {
+          substitutedText += "\n\n🔗 Arquivos em anexo:\n" + uploadedUrls.map((u, idx) => `Link ${idx+1}: ${u}`).join("\n");
+        }
+
+        // v14.2: Append auto-bill link as fallback
+        let energisaUrl = "";
+        if (isAutoBillMode && bill?.energisa_bill_url) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('invoices')
+            .getPublicUrl(bill.energisa_bill_url);
+          energisaUrl = publicUrl;
+          
+          if (!substitutedText.includes("Link Fatura")) {
+            substitutedText += `\n\n📄 Download da Fatura: ${energisaUrl}`;
+          }
+        }
 
         try {
           // A. Send Text Message
@@ -241,34 +259,38 @@ export default function AdminWhatsApp() {
 
           // B. Send Manual Attachments
           for (const url of uploadedUrls) {
-            await new Promise(r => setTimeout(r, 1000)); // Delay between files
-            await fetch("http://localhost:3333/send-whatsapp", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "Authorization": `Bearer solcontrole_secret_token_2026` },
-              body: JSON.stringify({ 
-                phone: num, 
-                file: url, 
-                filename: url.split('/').pop() || "arquivo" 
-              }),
-            });
+            try {
+              await new Promise(r => setTimeout(r, 2000)); // Increased delay
+              await fetch("http://localhost:3333/send-whatsapp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer solcontrole_secret_token_2026` },
+                body: JSON.stringify({ 
+                  phone: num, 
+                  file: url, 
+                  filename: url.split('/').pop() || "arquivo" 
+                }),
+              });
+            } catch (err) {
+              console.warn(`Failed to send attachment ${url} to ${num}`, err);
+            }
           }
 
           // C. Send Automatic Bill (Energisa) if Auto-Bill Mode
-          if (isAutoBillMode && bill?.energisa_bill_url) {
-            const { data: { publicUrl: energisaUrl } } = supabase.storage
-              .from('invoices')
-              .getPublicUrl(bill.energisa_bill_url);
-
-            await new Promise(r => setTimeout(r, 1000));
-            await fetch("http://localhost:3333/send-whatsapp", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "Authorization": `Bearer solcontrole_secret_token_2026` },
-              body: JSON.stringify({ 
-                phone: num, 
-                file: energisaUrl, 
-                filename: `Fatura_Energisa_${bill.month}_${bill.year}.pdf` 
-              }),
-            });
+          if (isAutoBillMode && energisaUrl) {
+            try {
+              await new Promise(r => setTimeout(r, 2000));
+              await fetch("http://localhost:3333/send-whatsapp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer solcontrole_secret_token_2026` },
+                body: JSON.stringify({ 
+                  phone: num, 
+                  file: energisaUrl, 
+                  filename: `Fatura_Energisa_${bill?.month}_${bill?.year}.pdf` 
+                }),
+              });
+            } catch (err) {
+              console.warn(`Failed to send auto-bill to ${num}`, err);
+            }
           }
 
           successCount++;
