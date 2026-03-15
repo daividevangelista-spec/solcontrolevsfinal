@@ -1,5 +1,6 @@
 import express from "express"
 import dotenv from "dotenv"
+import cors from "cors"
 
 dotenv.config()
 
@@ -8,30 +9,30 @@ const SOLCONTROLE_TOKEN = process.env.SOLCONTROLE_TOKEN || "solcontrole_secret_t
 
 app.use(express.json())
 
-// CORS Middleware - Definitive Fix
+// CORS & PNA (Private Network Access) Middleware
+app.use(cors({
+  origin: (origin, callback) => callback(null, true),
+  credentials: true,
+  methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization", "x-api-key"]
+}))
+
+// Support for Private Network Access (Public site to Localhost)
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  
-  if (origin) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-  } else {
-    res.setHeader("Access-Control-Allow-Origin", "*");
+  if (req.headers["access-control-request-private-network"]) {
+    res.setHeader("Access-Control-Allow-Private-Network", "true")
   }
-  
-  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-api-key");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
 
   // Log incoming request info for auditing
   if (req.method !== "OPTIONS") {
-    console.log(`[BRIDGE] Request: ${req.method} ${req.url} from ${origin || 'unknown origin'}`);
+    console.log(`[BRIDGE] Request: ${req.method} ${req.url} from ${req.headers.origin || 'unknown origin'}`)
   }
-
+  
   if (req.method === "OPTIONS") {
-    return res.status(200).end();
+    return res.status(204).end()
   }
-  next();
-});
+  next()
+})
 
 // GET Route for connectivity test
 app.get("/", (req, res) => {
