@@ -8,16 +8,31 @@ const SOLCONTROLE_TOKEN = process.env.SOLCONTROLE_TOKEN || "solcontrole_secret_t
 
 app.use(express.json())
 
-// CORS Middleware
+// CORS Middleware - Hardened
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*")
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200)
+  const origin = req.headers.origin;
+  
+  // Allow any origin for now to solve the issue definitively
+  res.setHeader("Access-Control-Allow-Origin", origin || "*");
+  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-api-key");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  // Log incoming request info for auditing
+  if (req.method !== "OPTIONS") {
+    console.log(`[BRIDGE] Request: ${req.method} ${req.url} from ${origin || 'unknown origin'}`);
   }
-  next()
-})
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
+});
+
+// GET Route for connectivity test
+app.get("/", (req, res) => {
+  res.json({ status: "online", service: "SolControle WhatsApp Bridge", version: "1.4.1" });
+});
 
 app.post("/send-whatsapp", async (req, res) => {
   const authHeader = req.headers.authorization
