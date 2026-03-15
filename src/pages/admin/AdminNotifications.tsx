@@ -99,10 +99,7 @@ export default function AdminNotifications() {
 
       console.log("Invocando Edge Function: send-notifications...");
       const { data, error } = await supabase.functions.invoke('send-notifications', {
-        body: {},
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        }
+        body: {}
       });
       
       if (error) {

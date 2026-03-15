@@ -41,7 +41,19 @@ export default function LoginPage() {
         toast.success('Conta criada! Verifique seu email.');
       }
     } catch (err: any) {
-      toast.error(err.message || 'Erro ao autenticar');
+      let message = err.message || 'Erro ao autenticar';
+      
+      // Friendly translations for common Supabase rate limits/security errors
+      if (message.includes('email rate limit exceeded')) {
+        message = 'Limite de e-mails atingido. Tente novamente em 1 hora ou fale com o suporte.';
+      } else if (message.includes('security purposes')) {
+        const seconds = message.match(/\d+/);
+        message = `Por segurança, aguarde ${seconds || 60} segundos antes de tentar novamente.`;
+      } else if (message.includes('Invalid login credentials')) {
+        message = 'E-mail ou senha incorretos.';
+      }
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
