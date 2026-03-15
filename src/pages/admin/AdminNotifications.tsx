@@ -88,24 +88,36 @@ export default function AdminNotifications() {
   useEffect(() => { load(); }, []);
 
   const manualTrigger = async () => {
-    toast.loading('Processando fila de envio manual...', { id: 'manual-trigger' });
+    toast.loading('Iniciando processamento manual...', { id: 'manual-trigger' });
     try {
+      console.log("Invocando Edge Function: send-notifications...");
+      
       const { data, error } = await supabase.functions.invoke('send-notifications', {
-        body: {}
+        body: {},
+        headers: {
+          // Explicitly pass the token if needed, though invoke usually handles it
+          // Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        }
       });
       
       if (error) {
-        if (error.message?.includes('401') || error.status === 401) {
-          throw new Error('Não autorizado (401). Verifique se o JWT está habilitado na Edge Function ou se as chaves da Supabase estão corretas.');
+        console.error("Erro retornado pela Function:", error);
+        
+        // Handle Supabase Gateway errors or Function returns
+        const status = (error as any).status || 500;
+        if (status === 401) {
+          throw new Error('Não autorizado (401). A função exige um login ativo de administrador.');
         }
-        throw error;
+        
+        throw new Error(error.message || 'Erro ao processar notificações na nuvem.');
       }
       
+      console.log("Resposta da Function:", data);
       toast.success(`Sucesso! Processadas ${data?.processed || 0} notificações.`, { id: 'manual-trigger' });
       load();
     } catch (err: any) {
       console.error('Erro manualTrigger:', err);
-      toast.error('Erro ao processar: ' + (err.message || 'Erro desconhecido'), { id: 'manual-trigger', duration: 5000 });
+      toast.error('Erro ao processar: ' + (err.message || 'Erro deconhecido'), { id: 'manual-trigger', duration: 6000 });
     }
   };
 

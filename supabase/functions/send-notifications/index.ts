@@ -85,16 +85,44 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
 
   try {
-    // Debug info for 401 troubleshooting
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.warn("No Authorization header provided in request.");
-    }
-
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    // --- AUTH VALIDATION ---
+    // 1. Check if it's a valid user token or service_role
+    if (!authHeader) {
+      console.error("Authorization header is missing");
+      return new Response(JSON.stringify({ error: 'Missing Authorization header' }), { 
+        status: 401, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Validate the token with Supabase Auth
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      // If user is not found, it might be a service_role key.
+      // We manually check if the token matches the service_role_key as secondary bypass.
+      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (token !== serviceKey) {
+          console.error("Invalid token provided:", authError?.message || "Not a user or service_role key");
+          return new Response(JSON.stringify({ error: 'Unauthorized', details: authError?.message }), { 
+            status: 401, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          });
+      }
+      console.log("Request authorized via service_role_key");
+    } else {
+      console.log(`Request authorized for user: ${user.email} (${user.id})`);
+    }
+    // --- END AUTH VALIDATION ---
 
     const { data: notifications, error: fetchError } = await supabase
       .from('notifications')
