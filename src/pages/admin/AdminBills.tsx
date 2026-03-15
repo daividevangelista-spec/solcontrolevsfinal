@@ -160,12 +160,13 @@ export default function AdminBills() {
 
   const handleCreateOrUpdate = async () => {
     const selectedUnit = units.find(u => u.id === form.consumer_unit_id);
-    const kwh = parseFloat(form.injected_energy_kwh || '0');
-    const energisa = parseFloat(form.energisa_bill_value || '0');
-    const concessionaria = parseFloat(form.concessionaria_value || '0');
+    const kwh = parseFloat(String(form.injected_energy_kwh || '0').replace(',', '.'));
+    const energisa = parseFloat(String(form.energisa_bill_value || '0').replace(',', '.'));
+    const concessionaria = parseFloat(String(form.concessionaria_value || '0').replace(',', '.'));
     const solar = calcSolar(kwh, selectedUnit, pricePerKwh);
+    
     // Total always represents the full cost (Solar + Energisa/Taxas)
-    const total = solar + energisa;
+    const total = Number((solar + energisa).toFixed(2));
 
     let energisaUrl = editingBill?.concessionaria_bill_url || null;
 
@@ -522,7 +523,9 @@ export default function AdminBills() {
                 </div>
                 <div className="text-center">
                     <p className="text-[9px] font-black uppercase text-muted-foreground/40 mb-1">Total</p>
-                    <p className="text-lg font-display font-black solar-gradient-text leading-none">R$ {Number(b.total_amount).toFixed(2)}</p>
+                    <p className="text-lg font-display font-black solar-gradient-text leading-none">
+                      R$ {Number(b.total_amount || (b.solar_energy_value + b.energisa_bill_value)).toFixed(2)}
+                    </p>
                 </div>
               </div>
 
