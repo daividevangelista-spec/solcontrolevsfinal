@@ -12,6 +12,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, AreaChart, Area, Legend 
 } from 'recharts';
+import { motion } from 'framer-motion';
 import { DashboardHero } from '@/components/DashboardHero';
 import { RefinedStat } from '@/components/RefinedStat';
 import { ActivityTimeline } from '@/components/ActivityTimeline';
@@ -127,12 +128,12 @@ export default function AdminDashboard() {
   }, []);
 
   const analyticsCards = [
-    { label: 'Total Faturado', value: `R$ ${metrics.totalFaturado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: TrendingUp, color: 'text-info' },
-    { label: 'Total Recebido', value: `R$ ${metrics.totalRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: CheckCircle, color: 'text-success' },
-    { label: 'Total Pendente', value: `R$ ${metrics.totalPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: Clock, color: 'text-warning' },
-    { label: 'Total Vencido', value: `R$ ${metrics.totalVencido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: AlertTriangle, color: 'text-destructive' },
-    { label: 'Total Injetado (kWh)', value: `${metrics.totalEnergyConsumed.toLocaleString('pt-BR')} kWh`, icon: Zap, color: 'text-primary' },
-    { label: 'Clientes em Atraso', value: metrics.overdueClients, icon: Users, color: 'text-destructive' },
+    { label: 'Total Faturado', value: `R$ ${metrics.totalFaturado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: TrendingUp, color: 'text-amber-500' },
+    { label: 'Total Recebido', value: `R$ ${metrics.totalRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: CheckCircle, color: 'text-emerald-500' },
+    { label: 'Total Pendente', value: `R$ ${metrics.totalPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: Clock, color: 'text-amber-600' },
+    { label: 'Total Vencido', value: `R$ ${metrics.totalVencido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: AlertTriangle, color: 'text-rose-500' },
+    { label: 'Total Injetado (kWh)', value: `${metrics.totalEnergyConsumed.toLocaleString('pt-BR')} kWh`, icon: Zap, color: 'text-amber-400' },
+    { label: 'Clientes em Atraso', value: metrics.overdueClients, icon: Users, color: 'text-rose-600' },
   ];
 
   return (
@@ -168,20 +169,28 @@ export default function AdminDashboard() {
       </div>
 
       <div>
-        <h2 className="text-lg font-display font-bold text-foreground mb-3 px-1">Indicadores Principais</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {analyticsCards.map(card => (
-            <Card key={card.label} className="border-border/50 shadow-sm">
-              <CardContent className="p-4 sm:p-5 flex items-center gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-muted/50 flex items-center justify-center shrink-0">
-                  <card.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${card.color}`} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-0.5">{card.label}</p>
-                  <p className="text-lg sm:text-xl font-display font-bold text-foreground truncate">{card.value}</p>
-                </div>
-              </CardContent>
-            </Card>
+        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-4 px-1">Indicadores Financeiros</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {analyticsCards.map((card, idx) => (
+            <motion.div
+              key={card.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 * idx }}
+            >
+              <Card className="glass-card border-white/10 dark:border-white/5 hover:border-primary/30 transition-all group overflow-hidden">
+                <CardContent className="p-5 flex items-center gap-5 relative">
+                  <div className="absolute top-0 right-0 w-24 h-24 solar-gradient opacity-0 group-hover:opacity-[0.03] transition-opacity blur-3xl -mr-12 -mt-12" />
+                  <div className="w-12 h-12 rounded-2xl bg-muted/30 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                    <card.icon className={`w-6 h-6 ${card.color}`} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest mb-1">{card.label}</p>
+                    <p className="text-xl font-display font-black text-foreground truncate">{card.value}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
         </div>
       </div>

@@ -55,9 +55,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isStaff = role === 'admin' || role === 'moderator';
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
-      {/* Header - Ultra Compact */}
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-700">
+      {/* Header - Ultra Compact Glassmorphic */}
+      <header className="sticky top-0 z-50 border-b border-border/20 bg-background/40 backdrop-blur-2xl">
         <div className="container flex items-center justify-between h-12 md:h-14 lg:h-14">
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-all active:scale-95 shrink-0">
             <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg premium-gradient flex items-center justify-center shadow-lg shadow-primary/20">
@@ -135,9 +135,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 variant="ghost" 
                 size="icon" 
                 onClick={signOut} 
-                className="rounded-lg h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all border border-border/20 hover:border-destructive/30"
+                className="rounded-xl h-9 w-9 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all border border-border/20 hover:border-destructive/30 saas-button"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-4 h-4" />
               </Button>
             </div>
           </nav>

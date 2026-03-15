@@ -64,41 +64,43 @@ export default function LoginPage() {
       <SolarBackground />
       
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: "circOut" }}
+        className="w-full max-w-md relative z-10"
       >
-        {/* Logo Section with Glow */}
-        <div className="text-center mb-10 relative">
+        {/* Logo Section with Advanced Glow */}
+        <div className="text-center mb-8 relative">
           <motion.div 
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ 
-              duration: 2, 
-              repeat: Infinity, 
-              repeatType: "reverse",
-              ease: "easeInOut"
+            animate={{ 
+              boxShadow: [
+                "0 0 20px rgba(245,158,11,0.2)",
+                "0 0 50px rgba(245,158,11,0.5)",
+                "0 0 20px rgba(245,158,11,0.2)"
+              ]
             }}
-            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl solar-gradient mb-6 shadow-[0_0_40px_-5px_rgba(245,158,11,0.5)]"
+            transition={{ duration: 4, repeat: Infinity }}
+            className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] solar-gradient mb-6 shadow-2xl relative overflow-hidden"
           >
-            <Sun className="w-10 h-10 text-accent group-hover:rotate-45 transition-transform duration-500" />
+            <Sun className="w-10 h-10 text-white fill-white/20 animate-spin-slow" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent" />
           </motion.div>
-          <h1 className="text-4xl font-display font-extrabold text-foreground tracking-tight">
+          
+          <h1 className="text-5xl font-display font-black text-foreground tracking-tighter mb-2">
             Sol<span className="solar-gradient-text">Controle</span>
           </h1>
-          <p className="text-muted-foreground mt-2 font-medium">Controle inteligente da sua energia solar.</p>
+          <p className="text-muted-foreground/80 font-bold uppercase tracking-[0.3em] text-[10px]">
+            Energy Intelligence Platform
+          </p>
         </div>
 
-        <Card className="glass-card border-white/20 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-full h-1 solar-gradient opacity-70" />
-          
+        <Card className="glass-card border-white/20 dark:border-white/5 shadow-2xl overflow-hidden solar-border-glow">
           <CardHeader className="text-center pb-2 pt-8">
-            <CardTitle className="font-display text-2xl font-bold tracking-tight">
-              {isLogin ? 'Bem-vindo de volta' : 'Faça parte da mudança'}
+            <CardTitle className="font-display text-2xl font-black tracking-tight text-foreground">
+              {isLogin ? 'Bem-vindo de Volta' : 'Inicie sua Jornada'}
             </CardTitle>
-            <CardDescription className="font-medium">
-              {isLogin ? 'Acesse sua conta para monitorar sua geração' : 'Registre-se para começar a economizar'}
+            <CardDescription className="font-medium text-muted-foreground/70">
+              {isLogin ? 'Gerencie sua energia com inteligência' : 'Cadastre-se para otimizar sua economia solar'}
             </CardDescription>
           </CardHeader>
           
@@ -107,44 +109,50 @@ export default function LoginPage() {
               <AnimatePresence mode="wait">
                 {!isLogin && (
                   <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2 overflow-hidden"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    className="space-y-2"
                   >
-                    <Label htmlFor="name" className="text-sm font-semibold ml-1">Nome Completo</Label>
-                    <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Ex: João Silva"
-                      className="h-11 bg-white/50 border-white/50 focus:border-primary/50 transition-all"
-                      required={!isLogin}
-                    />
+                    <Label htmlFor="name" className="text-[11px] font-black uppercase tracking-wider ml-1 opacity-70">Nome Completo</Label>
+                    <div className="relative group">
+                      <Input
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Ex: Vera Lucia Regis"
+                        className="h-12 bg-background/50 border-border/40 focus:border-primary/50 transition-all rounded-xl pl-4"
+                        required={!isLogin}
+                      />
+                      <div className="absolute inset-0 rounded-xl bg-primary/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity" />
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
               
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-semibold ml-1">Email Profissional</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@dominio.com"
-                  className="h-11 bg-white/50 border-white/50 focus:border-primary/50 transition-all font-medium"
-                  required
-                />
+                <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-wider ml-1 opacity-70">E-mail</Label>
+                <div className="relative group">
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="exemplo@solcontrole.com"
+                    className="h-12 bg-background/50 border-border/40 focus:border-primary/50 transition-all rounded-xl pl-4"
+                    required
+                  />
+                  <div className="absolute inset-0 rounded-xl bg-primary/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity" />
+                </div>
               </div>
               
               <div className="space-y-2">
                 <div className="flex justify-between items-center ml-1">
-                  <Label htmlFor="password" title="" className="text-sm font-semibold">Senha</Label>
+                  <Label htmlFor="password" title="" className="text-[11px] font-black uppercase tracking-wider opacity-70">Senha</Label>
                   {isLogin && (
                     <button
                       type="button"
-                      className="text-xs font-bold text-primary hover:text-primary/80 transition-colors"
+                      className="text-[10px] font-black uppercase tracking-wider text-primary hover:underline transition-all"
                       onClick={async () => {
                         if (!email) {
                           toast.error('Informe seu email primeiro');
@@ -159,46 +167,54 @@ export default function LoginPage() {
                     </button>
                   )}
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="h-11 bg-white/50 border-white/50 focus:border-primary/50 transition-all"
-                  required
-                  minLength={6}
-                />
+                <div className="relative group">
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="h-12 bg-background/50 border-border/40 focus:border-primary/50 transition-all rounded-xl pl-4"
+                    required
+                    minLength={6}
+                  />
+                  <div className="absolute inset-0 rounded-xl bg-primary/5 opacity-0 group-focus-within:opacity-100 pointer-events-none transition-opacity" />
+                </div>
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full solar-gradient text-accent font-bold h-12 text-base shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all" 
+                className="w-full saas-button premium-gradient text-white font-black uppercase tracking-widest h-12 rounded-xl text-xs shadow-xl shadow-primary/20 hover:-translate-y-0.5" 
                 disabled={loading}
               >
-                {loading ? 'Processando...' : isLogin ? 'Entrar no Sistema' : 'Finalizar Cadastro'}
+                {loading ? 'Processando...' : isLogin ? 'Acessar Plataforma' : 'Finalizar Cadastro'}
               </Button>
             </form>
 
-            <div className="mt-8 text-center pt-6 border-t border-white/10">
+            <div className="mt-8 text-center pt-6 border-t border-border/20">
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors flex items-center justify-center w-full gap-1"
+                className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground hover:text-primary transition-all flex items-center justify-center w-full gap-2"
               >
                 {isLogin ? (
-                  <>Ainda não tem conta? <span className="text-primary underline">Cadastre-se</span></>
+                  <>Novo por aqui? <span className="text-primary hover:scale-105 transition-transform">Criar Conta Premium</span></>
                 ) : (
-                  <>Já possui acesso? <span className="text-primary underline">Entrar agora</span></>
+                  <>Já possui acesso? <span className="text-primary hover:scale-105 transition-transform">Fazer Login</span></>
                 )}
               </button>
             </div>
           </CardContent>
         </Card>
 
-        <p className="text-center mt-8 text-xs text-muted-foreground font-medium uppercase tracking-widest opacity-50">
-          © 2026 SolControle System
-        </p>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.4 }}
+          transition={{ delay: 1 }}
+          className="text-center mt-8 text-[9px] text-muted-foreground font-black uppercase tracking-[0.4em]"
+        >
+          SolControle OS • V16 Platinum Edition
+        </motion.p>
       </motion.div>
     </div>
   );
