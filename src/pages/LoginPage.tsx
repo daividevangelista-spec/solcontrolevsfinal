@@ -61,14 +61,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center px-4 py-8 overflow-hidden">
       
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: "circOut" }}
-        className="w-full max-w-md relative z-10"
-      >
+      {/* Two-column layout: Login (center) + Demo Card (right) */}
+      <div className="w-full max-w-5xl relative z-10 flex flex-col lg:flex-row items-center lg:items-start gap-8">
+
+        {/* Center spacer on lg so login column appears centered */}
+        <div className="hidden lg:block lg:flex-1" />
+
+        {/* ===== Left/Center: Login Column ===== */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: "circOut" }}
+          className="w-full max-w-md flex-shrink-0"
+        >
         {/* Logo Section with Advanced Glow */}
         <div className="text-center mb-8 relative">
           <motion.div 
@@ -207,15 +214,15 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-      </motion.div>
+        </motion.div>
 
-      {/* Demo Access Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.6 }}
-        className="w-full max-w-md relative z-10 mt-4"
-      >
+        {/* ===== Right: Demo Access Card ===== */}
+        <div className="lg:flex-1 w-full max-w-md flex flex-col justify-center">
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5, duration: 0.7 }}
+          >
         <Link to="/demo" className="block group">
           <div className="relative overflow-hidden rounded-[2rem] border-2 border-dashed border-primary/40 bg-primary/5 backdrop-blur-xl p-6 hover:border-primary/80 hover:bg-primary/10 transition-all duration-500 shadow-xl shadow-primary/10 hover:shadow-primary/30 hover:scale-[1.02]">
             {/* Animated background glow */}
@@ -256,16 +263,18 @@ export default function LoginPage() {
             </div>
           </div>
         </Link>
-      </motion.div>
+          </motion.div>
 
-      <motion.p 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.4 }}
-        transition={{ delay: 1 }}
-        className="text-center mt-6 text-[9px] text-muted-foreground font-black uppercase tracking-[0.4em]"
-      >
-        SolControle OS • V16 Platinum Edition
-      </motion.p>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            transition={{ delay: 1.2 }}
+            className="text-center mt-6 text-[9px] text-muted-foreground font-black uppercase tracking-[0.4em]"
+          >
+            SolControle OS • V16 Platinum Edition
+          </motion.p>
+        </div>
+      </div>
     </div>
   );
 }
