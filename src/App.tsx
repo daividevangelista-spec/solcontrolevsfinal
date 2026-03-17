@@ -27,6 +27,11 @@ import ClientSettings from "@/pages/client/ClientSettings";
 
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import DemoLoginPage from "@/pages/demo/DemoLoginPage";
+import DemoDashboard from "@/pages/demo/DemoDashboard";
+import DemoClients from "@/pages/demo/DemoClients";
+import DemoBills from "@/pages/demo/DemoBills";
+import DemoLayout from "@/components/demo/DemoLayout";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +71,12 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute requiredRole="client"><AppLayout><ClientDashboard /></AppLayout></ProtectedRoute>} />
               <Route path="/dashboard/bills" element={<ProtectedRoute requiredRole="client"><AppLayout><ClientBills /></AppLayout></ProtectedRoute>} />
               <Route path="/dashboard/settings" element={<ProtectedRoute requiredRole="client"><AppLayout><ClientSettings /></AppLayout></ProtectedRoute>} />
+
+              {/* Demo routes */}
+              <Route path="/demo" element={<DemoLoginPage />} />
+              <Route path="/demo/dashboard" element={<DemoLayout><DemoDashboard /></DemoLayout>} />
+              <Route path="/demo/clientes" element={<DemoLayout><DemoClients /></DemoLayout>} />
+              <Route path="/demo/faturas" element={<DemoLayout><DemoBills /></DemoLayout>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

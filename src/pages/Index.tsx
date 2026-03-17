@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { 
   Sun, ArrowRight, Zap, ShieldCheck, BarChart3, MessageSquare, 
-  Leaf, Globe, Wind, CheckCircle2, ChevronRight, TrendingUp
+  Leaf, Globe, Wind, CheckCircle2, ChevronRight, TrendingUp, PlayCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SolarBackground } from "@/components/SolarBackground";
@@ -68,19 +68,14 @@ export default function Index() {
           >
             <Button size="lg" className="h-16 px-10 solar-gradient text-white font-black text-lg rounded-2xl shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all group" asChild>
               <Link to="/login">
-                Acessar Platinum <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                Começar agora <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform" />
               </Link>
             </Button>
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-muted overflow-hidden">
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 10}`} alt="User" />
-                </div>
-              ))}
-              <div className="w-10 h-10 rounded-full border-2 border-background bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary backdrop-blur-md">
-                +1.2k
-              </div>
-            </div>
+            <Button size="lg" variant="outline" className="h-16 px-10 rounded-2xl border-primary/20 font-black text-lg hover:bg-primary/5 transition-all w-full sm:w-auto uppercase tracking-widest group" asChild>
+              <Link to="/demo">
+                <PlayCircle className="mr-3 w-6 h-6 text-primary" /> Testar Demo
+              </Link>
+            </Button>
           </motion.div>
         </div>
       </section>
@@ -136,11 +131,41 @@ export default function Index() {
                 </div>
               ))}
             </div>
-            <Button size="lg" variant="outline" className="h-14 px-8 rounded-xl border-primary/20 font-black uppercase text-xs tracking-widest hover:bg-primary/5 group" asChild>
-              <Link to="/login">
-                Descobrir Recursos <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button size="lg" variant="outline" className="h-14 px-8 rounded-xl border-primary/20 font-black uppercase text-xs tracking-widest hover:bg-primary/5 group" asChild>
+                <Link to="/login">
+                  Descobrir Recursos <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
+              <Button size="lg" className="h-14 px-8 rounded-xl bg-background border-2 border-dashed border-primary/30 text-primary font-black uppercase text-xs tracking-widest hover:bg-primary/5 hover:border-primary/60 transition-all group" asChild>
+                <Link to="/demo">
+                  <PlayCircle className="mr-2 w-4 h-4 animate-pulse" /> Ver Demo Ao Vivo
+                </Link>
+              </Button>
+            </div>
+
+            {/* Demo Access Highlight Card */}
+            <Link to="/demo" className="block group mt-2">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="relative overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 p-5 cursor-pointer"
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-2xl -mr-8 -mt-8" />
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                    <PlayCircle className="w-5 h-5 text-primary group-hover:scale-125 transition-transform" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-primary opacity-70">Área do Cliente — Demo Interativa</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    </div>
+                    <p className="text-sm font-black text-foreground group-hover:text-primary transition-colors">Testar o painel agora, sem cadastro</p>
+                  </div>
+                  <ArrowRight className="ml-auto w-4 h-4 text-primary/50 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                </div>
+              </motion.div>
+            </Link>
           </div>
           <motion.div 
             whileHover={{ scale: 1.02 }}
@@ -234,7 +259,57 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Final CTA */}
+
+
+      {/* NEW: Lead Capture & Demo Trial Cards */}
+      <section className="py-24 relative overflow-hidden bg-zinc-900/10">
+        <div className="container px-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Card 1: WhatsApp Lead Capture */}
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            className="glass-card border-primary/20 p-10 rounded-[3rem] bg-zinc-950/40 relative overflow-hidden group"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl -mr-16 -mt-16" />
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6">
+              <MessageSquare className="w-8 h-8 text-emerald-500" />
+            </div>
+            <h3 className="text-3xl font-display font-black tracking-tight mb-4 uppercase">WhatsApp Especialista</h3>
+            <p className="text-muted-foreground font-medium mb-8 leading-relaxed">
+              Deixe seu WhatsApp e receba uma demonstração guiada de como o SolControle pode triplicar sua produtividade.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input 
+                type="tel" 
+                placeholder="(DD) 99999-9999" 
+                className="flex-1 h-16 bg-white/5 border border-white/10 rounded-2xl px-6 text-xl font-bold focus:outline-none focus:border-primary/50 transition-all text-foreground"
+              />
+              <Button onClick={() => window.open('https://wa.me/5565999005727', '_blank')} className="h-16 px-10 solar-gradient text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-lg shadow-primary/20 min-w-max">
+                Me Chamar agora
+              </Button>
+            </div>
+          </motion.div>
+
+          {/* Card 2: Demo Access Invitation */}
+          <motion.div 
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            className="glass-card border-white/10 p-10 rounded-[3rem] bg-primary/5 relative overflow-hidden group border-2 border-dashed border-primary/30"
+          >
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/10 blur-3xl -ml-16 -mb-16" />
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+              <PlayCircle className="w-8 h-8 text-primary animate-pulse" />
+            </div>
+            <h3 className="text-3xl font-display font-black tracking-tight mb-4 uppercase text-primary">Demonstração Real</h3>
+            <p className="text-muted-foreground font-medium mb-8 leading-relaxed">
+              Explore o painel administrativo Platinum agora mesmo. Veja faturas, clientes e automações em tempo real.
+            </p>
+            <Button className="w-full h-16 bg-foreground text-background hover:bg-foreground/80 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all" asChild>
+              <Link to="/demo">Testar Agora Grátis</Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
       <section className="py-32 text-center">
         <div className="container px-6">
           <h2 className="text-5xl md:text-7xl font-display font-black tracking-tighter mb-10">

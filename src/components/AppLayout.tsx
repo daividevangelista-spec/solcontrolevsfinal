@@ -62,8 +62,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex bg-transparent text-foreground selection:bg-primary/30 selection:text-foreground">
       {/* Premium Sidebar (Left) */}
-      <aside className="hidden md:flex flex-col w-64 h-screen sticky top-0 bg-background/40 backdrop-blur-3xl border-r border-white/10 p-5 z-50">
-        <Link to={isStaff ? "/admin" : "/dashboard"} className="flex items-center gap-3 px-3 py-6 mb-4 border-b border-white/5 hover:bg-white/5 transition-colors rounded-t-2xl group/logo">
+      <aside className="hidden md:flex flex-col w-60 h-screen sticky top-0 bg-background/40 backdrop-blur-3xl border-r border-white/10 p-4 z-50">
+        <Link to={isStaff ? "/admin" : "/dashboard"} className="flex items-center gap-3 px-3 py-4 mb-2 border-b border-white/5 hover:bg-white/5 transition-colors rounded-t-2xl group/logo">
           <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.2)] group-hover/logo:scale-110 transition-transform">
             <Sun className="w-6 h-6 text-primary animate-pulse" />
           </div>
@@ -73,7 +73,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </Link>
 
-        <nav className="flex-1 space-y-6 overflow-y-auto pr-1 hide-scrollbar">
+        <nav className="flex-1 space-y-4 overflow-y-auto pr-1 hide-scrollbar py-1">
           {!role ? (
             <div className="space-y-4 px-3">
               {[1, 2, 3, 4].map(i => (
@@ -91,7 +91,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       key={link.to}
                       variant="ghost"
                       onClick={() => navigate(link.to)}
-                      className={`w-full justify-start h-9 px-3 rounded-lg transition-all duration-300 relative group ${
+                      className={`w-full justify-start h-8 px-2.5 rounded-lg transition-all duration-300 relative group ${
                         isActive 
                           ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_-5px_rgba(245,158,11,0.3)]' 
                           : 'text-muted-foreground/60 hover:text-foreground hover:bg-white/5'
@@ -103,8 +103,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                           className="absolute left-0 w-1 h-4 bg-primary rounded-full shadow-[0_0_10px_rgb(245,158,11)]"
                         />
                       )}
-                      <link.icon className={`w-4 h-4 mr-3 transition-colors ${isActive ? 'text-primary' : 'group-hover:text-primary/60'}`} />
-                      <span className="text-[10px] font-black uppercase tracking-wider">{link.label}</span>
+                      <link.icon className={`w-3.5 h-3.5 mr-2.5 transition-colors ${isActive ? 'text-primary' : 'group-hover:text-primary/60'}`} />
+                      <span className="text-[9px] font-black uppercase tracking-wider">{link.label}</span>
                     </Button>
                   );
                 })}
@@ -118,7 +118,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   key={link.to}
                   variant="ghost"
                   onClick={() => navigate(link.to)}
-                  className={`w-full justify-start h-10 px-3 rounded-lg transition-all duration-300 relative group ${
+                  className={`w-full justify-start h-8 px-2.5 rounded-lg transition-all duration-300 relative group ${
                     isActive 
                       ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_-5px_rgba(245,158,11,0.3)]' 
                       : 'text-muted-foreground/60 hover:text-foreground hover:bg-white/5'
@@ -127,29 +127,29 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   {isActive && (
                     <motion.div 
                       layoutId="activeTab"
-                      className="absolute left-0 w-1 h-5 bg-primary rounded-full shadow-[0_0_10px_rgb(245,158,11)]"
+                      className="absolute left-0 w-1 h-4 bg-primary rounded-full shadow-[0_0_10px_rgb(245,158,11)]"
                     />
                   )}
-                  <link.icon className={`w-4 h-4 mr-3 transition-colors ${isActive ? 'text-primary' : 'group-hover:text-primary/60'}`} />
-                  <span className="text-[10px] font-black uppercase tracking-wider">{link.label}</span>
+                  <link.icon className={`w-3.5 h-3.5 mr-2.5 transition-colors ${isActive ? 'text-primary' : 'group-hover:text-primary/60'}`} />
+                  <span className="text-[9px] font-black uppercase tracking-wider">{link.label}</span>
                 </Button>
               );
             })
           )}
         </nav>
 
-        <div className="pt-4 border-t border-white/5 space-y-3">
+        <div className="pt-3 border-t border-white/5 space-y-2">
           <div className="flex items-center justify-between px-1">
-            <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40">Preferências</span>
+            <span className="text-[7px] font-black uppercase tracking-widest text-muted-foreground/40">Preferências</span>
             <ThemeToggle />
           </div>
           <Button 
             variant="ghost" 
             onClick={signOut}
-            className="w-full justify-start h-10 px-3 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-all border border-transparent hover:border-destructive/20"
+            className="w-full justify-start h-8 px-2.5 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-all border border-transparent hover:border-destructive/20"
           >
-            <LogOut className="w-4 h-4 mr-3" />
-            <span className="text-[10px] font-black uppercase tracking-wider">Desconectar</span>
+            <LogOut className="w-3.5 h-3.5 mr-2.5" />
+            <span className="text-[9px] font-black uppercase tracking-wider">Desconectar</span>
           </Button>
         </div>
       </aside>
