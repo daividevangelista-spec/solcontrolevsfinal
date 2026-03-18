@@ -1,9 +1,10 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { 
-  Sun, Menu, X, LogOut, LayoutDashboard, Users, Zap, Settings, 
+import {
+  Sun, Menu, X, LogOut, LayoutDashboard, Users, Zap, Settings,
   FileText, CreditCard, Shield, History, Database, MessageSquare, ChevronDown
 } from 'lucide-react';
+import { AnimatedBrand } from '@/components/AnimatedBrand';
 import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -62,13 +63,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex bg-transparent text-foreground selection:bg-primary/30 selection:text-foreground">
       {/* Premium Sidebar (Left) */}
-      <aside className="hidden md:flex flex-col w-60 h-screen sticky top-0 bg-background/40 backdrop-blur-3xl border-r border-white/10 p-4 z-50">
-        <Link to={isStaff ? "/admin" : "/dashboard"} className="flex items-center gap-3 px-3 py-4 mb-2 border-b border-white/5 hover:bg-white/5 transition-colors rounded-t-2xl group/logo">
+      <aside className="hidden md:flex flex-col w-60 h-screen sticky top-0 bg-background/40 backdrop-blur-xl border-r border-white/10 p-4 z-50 will-change-transform">
+        <Link to="/" className="flex items-center gap-3 px-3 py-4 mb-2 border-b border-white/5 hover:bg-white/5 transition-colors rounded-t-2xl group/logo">
           <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.2)] group-hover/logo:scale-110 transition-transform">
             <Sun className="w-6 h-6 text-primary animate-pulse" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-display font-black tracking-tighter text-foreground">SOLCONTROLE</span>
+            <AnimatedBrand size="xs" className="uppercase tracking-tight" as="span" />
             <span className="text-[9px] font-black tracking-widest text-primary/60 uppercase">Platinum V16</span>
           </div>
         </Link>
@@ -156,13 +157,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
-        <header className="md:hidden sticky top-0 z-50 h-16 bg-background/40 backdrop-blur-3xl border-b border-white/10 flex items-center justify-between px-6">
-          <Link to={isStaff ? "/admin" : "/dashboard"} className="flex items-center gap-3 active:scale-95 transition-transform">
-            <div className="w-8 h-8 rounded-xl premium-gradient flex items-center justify-center">
-              <Sun className="w-5 h-5 text-white" />
+        <header className="md:hidden sticky top-0 z-50 h-16 bg-background/20 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-6">
+          <div className="flex items-center gap-3 active:scale-95 transition-transform cursor-pointer" onClick={() => navigate('/')}>
+            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Sun className="w-5 h-5 text-primary" />
             </div>
-            <span className="font-display font-black text-lg tracking-tighter">SolControle</span>
-          </Link>
+            <AnimatedBrand size="sm" as="span" />
+          </div>
          <Button variant="ghost" size="icon" onClick={() => setMenuOpen(!menuOpen)} className="rounded-xl bg-white/5">
             {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </Button>
@@ -178,7 +179,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-3xl md:hidden p-8 flex flex-col"
             >
               <div className="flex justify-between items-center mb-12">
-                <Link to={isStaff ? "/admin" : "/dashboard"} className="font-display font-black text-2xl tracking-tighter text-primary" onClick={() => setMenuOpen(false)}>SolControle</Link>
+                <AnimatedBrand size="md" to="/" onClick={() => setMenuOpen(false)} />
               <Button variant="ghost" size="icon" onClick={() => setMenuOpen(false)}>
                   <X className="w-8 h-8" />
                 </Button>

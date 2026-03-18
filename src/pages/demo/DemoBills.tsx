@@ -74,52 +74,52 @@ export default function DemoBills() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-black/20">
-                <th className="px-8 py-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Cliente</th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Vencimento</th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Solar + Taxas</th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Economia</th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Total</th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Status</th>
-                <th className="px-8 py-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 text-right">Ação</th>
+              <tr className="bg-muted/10 dark:bg-black/20 border-b border-white/5">
+                <th className="px-8 py-5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Cliente</th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Vencimento</th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Solar + Taxas</th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Economia</th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Total</th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Status</th>
+                <th className="px-8 py-5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 text-right">Ação</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-border/20">
               {bills.map((bill) => (
-                <tr key={bill.id} className="group hover:bg-white/5 transition-colors">
-                  <td className="px-8 py-5">
+                <tr key={bill.id} className="group hover:bg-muted/20 dark:hover:bg-white/5 transition-colors">
+                  <td className="px-8 py-6">
                     <span className="text-xs font-black text-foreground group-hover:text-primary transition-colors">{bill.cliente}</span>
                   </td>
-                  <td className="px-6 py-5">
+                  <td className="px-6 py-6">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-muted-foreground/40" />
+                      <Calendar className="w-4 h-4 text-muted-foreground/40" />
                       <span className="text-xs font-bold text-muted-foreground">{new Date(bill.vencimento).toLocaleDateString('pt-BR')}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-5 text-xs font-bold text-muted-foreground">
-                    R$ {bill.valorSolar} <span className="mx-1">+</span> R$ {bill.taxas}
+                  <td className="px-6 py-6 text-xs font-bold text-muted-foreground">
+                    R$ {bill.valorSolar} <span className="mx-1 text-primary">+</span> R$ {bill.taxas}
                   </td>
-                  <td className="px-6 py-5">
+                  <td className="px-6 py-6">
                     <div className="flex flex-col">
                       <span className="text-xs font-black text-emerald-500">- R$ {(bill.valorSolar * 0.4).toFixed(2)}</span>
-                      <span className="text-[8px] font-black uppercase text-muted-foreground/40">SolControle ROI</span>
+                      <span className="text-[8px] font-black uppercase text-muted-foreground/60 tracking-wider">SolControle ROI</span>
                     </div>
                   </td>
-                  <td className="px-6 py-5">
+                  <td className="px-6 py-6">
                     <span className="text-sm font-black text-foreground">R$ {bill.total}</span>
                   </td>
-                  <td className="px-6 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tight ${
-                      bill.status === 'Pago' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
-                      bill.status === 'Pendente' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
-                      'bg-red-500/10 text-red-500 border border-red-500/20'
+                  <td className="px-6 py-6">
+                    <span className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tight ${
+                      bill.status === 'Pago' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border border-emerald-500/20' :
+                      bill.status === 'Pendente' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-500 border border-amber-500/20' :
+                      'bg-red-500/10 text-red-600 dark:text-red-500 border border-red-500/20'
                     }`}>
                       {bill.status}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-right">
+                  <td className="px-8 py-6 text-right">
                     <Button 
                       onClick={() => simulateSend(bill.id, bill.cliente, bill.total)}
                       disabled={sending}
@@ -136,27 +136,31 @@ export default function DemoBills() {
         </div>
       </div>
 
-      {/* Statistics Recap */}
-      <div className="bg-zinc-900 border border-white/10 rounded-[2rem] p-8 flex flex-col md:flex-row gap-8 items-center justify-between shadow-inner">
-        <div className="flex gap-6 items-center">
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <Zap className="w-8 h-8" />
+      {/* Insight Card - Redesigned for better contrast and clarity */}
+      <div className="bg-muted/30 dark:bg-zinc-900/40 border border-muted dark:border-white/10 rounded-[2.5rem] p-8 md:p-10 flex flex-col lg:flex-row gap-8 items-center justify-between shadow-xl">
+        <div className="flex flex-col sm:flex-row gap-8 items-center sm:items-start text-center sm:text-left">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner border border-primary/20 shrink-0">
+            <Zap className="w-9 h-9 fill-primary/20" />
           </div>
           <div>
-            <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground/40 mb-1">Dica Platinum</h4>
-            <p className="max-w-md text-sm font-bold text-foreground">
-              Personalize suas mensagens com variáveis automáticas como <code className="bg-white/5 px-1.5 py-0.5 rounded text-primary">{"{nome_cliente}"}</code> para aumentar a taxa de pagamento em até 40%.
+            <div className="flex items-center gap-2 mb-2 justify-center sm:justify-start">
+               <div className="h-4 w-1 bg-primary rounded-full" />
+               <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-primary">Insight Pro Platinum</h4>
+            </div>
+            <p className="max-w-xl text-base font-semibold leading-relaxed text-foreground/80 dark:text-foreground italic">
+              "Personalize suas mensagens com variáveis automáticas como <code className="bg-primary/10 px-2 py-0.5 rounded text-primary font-black">{"{nome_cliente}"}</code>. Isso aumenta a taxa de pagamento em até <span className="text-emerald-500 font-black underline decoration-primary/30 underline-offset-4">40%</span>."
             </p>
           </div>
         </div>
-        <div className="flex gap-4">
-          <div className="text-center bg-black/40 px-6 py-4 rounded-2xl border border-white/5 w-32">
-            <span className="block text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mb-1">Visualizações</span>
-            <span className="text-lg font-black text-foreground">85%</span>
+        
+        <div className="grid grid-cols-2 gap-4 w-full lg:w-auto">
+          <div className="bg-background/60 dark:bg-black/40 px-8 py-6 rounded-3xl border border-muted dark:border-white/5 text-center shadow-lg group hover:border-primary/30 transition-all">
+            <span className="block text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">Visualizações</span>
+            <span className="text-2xl font-black text-foreground tabular-nums">85%</span>
           </div>
-          <div className="text-center bg-black/40 px-6 py-4 rounded-2xl border border-white/5 w-32">
-            <span className="block text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 mb-1">Abertura Zap</span>
-            <span className="text-lg font-black text-emerald-500">92%</span>
+          <div className="bg-background/60 dark:bg-black/40 px-8 py-6 rounded-3xl border border-muted dark:border-white/5 text-center shadow-lg group hover:border-emerald-500/30 transition-all">
+            <span className="block text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">Engajamento</span>
+            <span className="text-2xl font-black text-emerald-500 tabular-nums">92%</span>
           </div>
         </div>
       </div>

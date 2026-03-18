@@ -57,6 +57,7 @@
     --solar-flare: 38 100% 65%;
     --solar-energy: 45 100% 50%;
     --glow-opacity: 0.15;
+    --will-change-transform: transform;
   }
 
   .dark {
@@ -98,7 +99,7 @@
   }
 
   * {
-    @apply border-border transition-colors duration-200;
+    @apply border-border;
   }
 
   body {
@@ -134,7 +135,7 @@
   }
 
   .glass-card {
-    @apply bg-card/40 backdrop-blur-2xl border border-white/20 dark:border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
+    @apply bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] will-change-transform;
   }
 
   .saas-card {
@@ -153,7 +154,7 @@
 
   .saas-button {
     @apply relative overflow-hidden transition-all duration-300 active:scale-[0.98] 
-           hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] shadow-lg active:shadow-inner;
+           hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] shadow-lg active:shadow-inner will-change-transform;
   }
 
   .premium-gradient {
@@ -216,5 +217,39 @@
       radial-gradient(at 0% 0%, hsla(38, 100%, 50%, 0.15) 0, transparent 50%), 
       radial-gradient(at 50% 0%, hsla(45, 100%, 50%, 0.1) 0, transparent 50%), 
       radial-gradient(at 100% 0%, hsla(25, 100%, 50%, 0.15) 0, transparent 50%);
+  }
+
+  /* ✨ AnimatedBrand: SolControle logo shimmer */
+  @keyframes brand-shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center;  }
+  }
+
+  @keyframes brand-glow-pulse {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(245,158,11,0.3)); }
+    50%       { filter: drop-shadow(0 0 12px rgba(245,158,11,0.6)); }
+  }
+
+  .brand-animated {
+    background: linear-gradient(
+      110deg,
+      #ff7a00 0%,
+      #ffb347 20%,
+      #fff8ee 40%,
+      #ffb347 60%,
+      #ff7a00 80%,
+      #ffb347 100%
+    );
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: brand-shimmer 3.5s linear infinite, brand-glow-pulse 3s ease-in-out infinite;
+    will-change: transform, opacity, filter;
+  }
+
+  .brand-static-part {
+    /* "Sol" part — plain foreground color */
+    color: inherit;
   }
 }

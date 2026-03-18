@@ -283,10 +283,7 @@ export default function AdminBills() {
   const handleDelete = async (id: string) => {
     if (!confirm('Excluir esta fatura permanentemente?')) return;
     const { error } = await supabase.from('energy_bills').delete().eq('id', id);
-    if (!error) {
-      toast.success("Excluu00edda");
-      load();
-    }
+      toast.success("Excluída");
   };
 
   const handleUploadBoleto = async (file: File, billId: string) => {
@@ -699,7 +696,7 @@ export default function AdminBills() {
             </div>
 
             <Button onClick={handleCreateOrUpdate} className="w-full h-12 rounded-2xl solar-gradient text-accent font-black text-sm tracking-widest shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all active:scale-95 mt-2">
-              {editingBill ? 'SALVAR ALTERAÇÕES' : 'CONFIRMAR REGISTRO'}
+              {editingBill ? 'SALVAR ALTERAÇÕES' : 'CONFIRMAR REGISTRO'}
             </Button>
           </div>
         </DialogContent>

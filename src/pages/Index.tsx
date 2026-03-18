@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { 
-  Sun, ArrowRight, Zap, ShieldCheck, BarChart3, MessageSquare, 
-  Leaf, Globe, Wind, CheckCircle2, ChevronRight, TrendingUp, PlayCircle
+  Sun, ArrowRight, Zap, Leaf, Globe, MessageSquare, 
+  Wind, CheckCircle2, ChevronRight, TrendingUp, PlayCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SolarBackground } from "@/components/SolarBackground";
+import { AnimatedBrand } from "@/components/AnimatedBrand";
 
 export default function Index() {
   return (
@@ -15,12 +16,12 @@ export default function Index() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 border-b border-white/10 bg-background/20 backdrop-blur-2xl">
         <div className="container h-16 flex items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl premium-gradient flex items-center justify-center shadow-lg shadow-primary/20">
-              <Sun className="w-5 h-5 text-white animate-spin-slow" />
+          <Link to="/" className="flex items-center gap-2 group cursor-pointer active:scale-95 transition-transform">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+              <Sun className="w-5 h-5 text-primary" />
             </div>
-            <span className="font-display font-black text-xl tracking-tighter">SolControle</span>
-          </div>
+            <AnimatedBrand size="sm" as="span" />
+          </Link>
           
           <div className="flex items-center gap-4">
             <Link to="/login" className="text-xs font-black uppercase tracking-widest hover:text-primary transition-colors hidden sm:block px-4">Entrar</Link>
@@ -96,6 +97,7 @@ export default function Index() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 className="glass-card border-white/10 p-8 rounded-3xl solar-border-glow group"
+                style={{ willChange: 'transform, opacity' }}
               >
                 <div className={`w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:solar-gradient group-hover:text-white transition-all duration-500 shadow-inner`}>
                   <feature.icon className="w-7 h-7" />
@@ -259,8 +261,6 @@ export default function Index() {
         </div>
       </section>
 
-
-
       {/* NEW: Lead Capture & Demo Trial Cards */}
       <section className="py-24 relative overflow-hidden bg-zinc-900/10">
         <div className="container px-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -269,6 +269,7 @@ export default function Index() {
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             className="glass-card border-primary/20 p-10 rounded-[3rem] bg-zinc-950/40 relative overflow-hidden group"
+            style={{ willChange: 'transform, opacity' }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl -mr-16 -mt-16" />
             <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6">
@@ -285,7 +286,7 @@ export default function Index() {
                 className="flex-1 h-16 bg-white/5 border border-white/10 rounded-2xl px-6 text-xl font-bold focus:outline-none focus:border-primary/50 transition-all text-foreground"
               />
               <Button onClick={() => window.open('https://wa.me/5565999005727', '_blank')} className="h-16 px-10 solar-gradient text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-lg shadow-primary/20 min-w-max">
-                Me Chamar agora
+                Me chamar agora
               </Button>
             </div>
           </motion.div>
@@ -295,6 +296,7 @@ export default function Index() {
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             className="glass-card border-white/10 p-10 rounded-[3rem] bg-primary/5 relative overflow-hidden group border-2 border-dashed border-primary/30"
+            style={{ willChange: 'transform, opacity' }}
           >
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/10 blur-3xl -ml-16 -mb-16" />
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
@@ -310,6 +312,7 @@ export default function Index() {
           </motion.div>
         </div>
       </section>
+
       <section className="py-32 text-center">
         <div className="container px-6">
           <h2 className="text-5xl md:text-7xl font-display font-black tracking-tighter mb-10">
@@ -324,12 +327,12 @@ export default function Index() {
       {/* Footer */}
       <footer className="py-12 border-t border-white/5 bg-background/20 backdrop-blur-md">
         <div className="container px-6 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl solar-gradient flex items-center justify-center">
-              <Sun className="w-5 h-5 text-white" />
+          <Link to="/" className="flex items-center gap-2 group cursor-pointer active:scale-95 transition-transform">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+              <Sun className="w-5 h-5 text-primary" />
             </div>
-            <span className="font-display font-black text-xl tracking-tighter">SolControle</span>
-          </div>
+            <AnimatedBrand size="sm" as="span" />
+          </Link>
           
           <div className="text-muted-foreground/60 font-bold text-[10px] uppercase tracking-[0.2em]">
             © {new Date().getFullYear()} SolControle Platinum Edition. Feito para o Brasil.

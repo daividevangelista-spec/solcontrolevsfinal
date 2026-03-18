@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { AnimatedBrand } from '@/components/AnimatedBrand';
 
 const demoGroups = [
   {
@@ -66,15 +67,15 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen flex bg-background text-foreground selection:bg-primary/30">
       {/* Demo Sidebar */}
       <aside className="hidden md:flex flex-col w-56 h-screen sticky top-0 bg-background/40 backdrop-blur-3xl border-r border-border p-4 z-50">
-        <div className="flex items-center gap-3 px-3 py-4 mb-2 border-b border-white/5">
-          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+        <Link to="/" className="flex items-center gap-3 px-3 py-4 mb-2 border-b border-white/5 hover:bg-white/5 transition-colors rounded-xl group/logo">
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.2)] group-hover/logo:scale-110 transition-transform">
             <Sun className="w-6 h-6 text-primary animate-pulse" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-display font-black tracking-tighter text-foreground">SOLCONTROLE</span>
+            <AnimatedBrand size="xs" className="uppercase tracking-tight" as="span" />
             <span className="text-[9px] font-black tracking-widest text-primary/60 uppercase">Modo Demo</span>
           </div>
-        </div>
+        </Link>
 
         <div className="px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg mb-3">
           <p className="text-[9px] font-black text-primary uppercase text-center leading-tight">
@@ -133,11 +134,11 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
         <header className="md:hidden sticky top-0 z-50 h-16 bg-background/40 backdrop-blur-3xl border-b border-border flex items-center justify-between px-6">
-          <div className="flex items-center gap-3 active:scale-95 transition-transform" onClick={() => navigate('/demo/dashboard')}>
-            <div className="w-8 h-8 rounded-xl premium-gradient flex items-center justify-center">
-              <Sun className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-3 active:scale-95 transition-transform cursor-pointer" onClick={() => navigate('/')}>
+            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Sun className="w-5 h-5 text-primary" />
             </div>
-            <span className="font-display font-black text-lg tracking-tighter">SolControle Demo</span>
+            <AnimatedBrand size="sm" as="span" />
           </div>
           <Button variant="ghost" size="icon" onClick={() => setMenuOpen(!menuOpen)} className="rounded-xl bg-white/5">
             {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -178,7 +179,7 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
             className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-3xl md:hidden p-8 flex flex-col"
           >
             <div className="flex justify-between items-center mb-12">
-              <span className="font-display font-black text-2xl tracking-tighter text-primary">SolControle Demo</span>
+              <AnimatedBrand size="md" to="/" onClick={() => setMenuOpen(false)} />
               <Button variant="ghost" size="icon" onClick={() => setMenuOpen(false)}>
                 <X className="w-8 h-8" />
               </Button>
