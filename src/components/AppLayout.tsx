@@ -84,7 +84,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           ) : isStaff ? (
             adminGroups.map((group) => (
               <div key={group.label} className="space-y-1">
-                <h2 className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 px-3 mb-2">{group.label}</h2>
+                <h2 className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/50 dark:text-muted-foreground/30 px-3 mb-2">{group.label}</h2>
                 {group.links.map((link) => {
                   const isActive = location.pathname === link.to;
                   return (
@@ -95,7 +95,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       className={`w-full justify-start h-8 px-2.5 rounded-lg transition-all duration-300 relative group ${
                         isActive 
                           ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_-5px_rgba(245,158,11,0.3)]' 
-                          : 'text-muted-foreground/60 hover:text-foreground hover:bg-white/5'
+                          : 'text-foreground/70 dark:text-muted-foreground/60 hover:text-foreground hover:bg-white/5'
                       }`}
                     >
                       {isActive && (
@@ -105,7 +105,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         />
                       )}
                       <link.icon className={`w-3.5 h-3.5 mr-2.5 transition-colors ${isActive ? 'text-primary' : 'group-hover:text-primary/60'}`} />
-                      <span className="text-[9px] font-black uppercase tracking-wider">{link.label}</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider">{link.label}</span>
                     </Button>
                   );
                 })}
@@ -122,7 +122,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   className={`w-full justify-start h-8 px-2.5 rounded-lg transition-all duration-300 relative group ${
                     isActive 
                       ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_-5px_rgba(245,158,11,0.3)]' 
-                      : 'text-muted-foreground/60 hover:text-foreground hover:bg-white/5'
+                      : 'text-foreground/70 dark:text-muted-foreground/60 hover:text-foreground hover:bg-white/5'
                   }`}
                 >
                   {isActive && (
@@ -132,7 +132,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     />
                   )}
                   <link.icon className={`w-3.5 h-3.5 mr-2.5 transition-colors ${isActive ? 'text-primary' : 'group-hover:text-primary/60'}`} />
-                  <span className="text-[9px] font-black uppercase tracking-wider">{link.label}</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider">{link.label}</span>
                 </Button>
               );
             })
